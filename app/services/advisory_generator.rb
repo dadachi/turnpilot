@@ -9,6 +9,7 @@ class AdvisoryGenerator
   end
 
   def call
+    return nil if @order.suppressed? # staff overrode a similar advisory recently — stay quiet
     result = GemmaClient.advise(prompt(build_snapshot))
     advisory = @order.advisories.create!(
       kind: "walk_away_risk",

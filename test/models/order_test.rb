@@ -68,6 +68,27 @@ class OrderTest < ActiveSupport::TestCase
     assert order.walk_away_risk(NOW) > order.walk_away_risk(NOW, threshold: 2.0)
   end
 
+  # --- suppressed? (override quiets similar advisories) -------------------
+
+  test "suppressed? is true only for a recent same-kind override" do
+    order = Order.create!(status: :waiting, joined_at: NOW - 600, queue_number: "7")
+
+    assert_not order.suppressed?, "no advisories yet"
+
+    a = order.advisories.create!(kind: "walk_away_risk", status: :overridden, text: "x")
+    assert order.suppressed?, "recent override suppresses"
+
+    a.update_column(:created_at, (Advisory::SUPPRESSION_WINDOW + 1.minute).ago)
+    assert_not order.suppressed?, "override older than the window no longer suppresses"
+  end
+
+  test "suppressed? ignores accepted advisories and other kinds" do
+    order = Order.create!(status: :waiting, joined_at: NOW - 600, queue_number: "8")
+    order.advisories.create!(kind: "walk_away_risk", status: :accepted, text: "ok")
+    order.advisories.create!(kind: "open_server", status: :overridden, text: "other")
+    assert_not order.suppressed?
+  end
+
   # --- wait_minutes -------------------------------------------------------
 
   test "wait_minutes converts seconds to minutes rounded to 0.1" do
