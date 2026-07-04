@@ -39,7 +39,7 @@ class Replayer
     Order.open
          .select { |o| o.flagged?(threshold: threshold[o.shop_id]) }
          .sort_by { |o| -o.walk_away_risk(threshold: threshold[o.shop_id]) }
-         .reject { |o| o.advisories.pending.exists? }
+         .reject { |o| o.advisories.pending.exists? || o.suppressed? }
          .first(limit)
          .filter_map { |o| AdvisoryGenerator.for(o) }
   end

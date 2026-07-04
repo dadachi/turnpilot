@@ -14,7 +14,7 @@
 - [x] Situational model: per-order wait + walk-away risk vs baseline (`Order#flagged?`)
 - [x] Local Gemma 4 advisory via `GemmaClient` (Ollama /api/chat, think:false, format:json)
 - [x] Advisory streams to console via Turbo; Accept/Override buttons render
-- [ ] **Override should suppress similar advisories + feed back a learned threshold** (v1 gap)
+- [x] **Override suppresses similar advisories + feeds back a learned threshold** — `ShopThreshold` + suppression window (`Advisory::SUPPRESSION_WINDOW`)
 - [ ] **Real-time accelerated replayer** (currently seed anchors mid-rush; add a ticking clock)
 - [x] **Tests** for `Order` math (9) + advisory trigger (4, Gemma+broadcast stubbed, offline)
 - [ ] Tighten Gemma prompt so `advise` is a strict boolean (model returned a label)
@@ -27,6 +27,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Override suppression window (2026-07-04) — Override step 4/4 ✅ feature complete
+`Advisory::SUPPRESSION_WINDOW` (5 min); `Order#suppressed?` is true for a recent same-kind
+**override** only (ignores accepts + other kinds). `AdvisoryGenerator` early-returns nil
+(no Gemma call) and `Replayer.tick` skips suppressed orders — so a rejected advisory stays
+quiet for the window. +3 tests. **v1 Override item now checked off.** Next: real-time ticking replayer.
+
 ### Accept/Override feed back to the threshold (2026-07-04) — Override step 3/4
 `AdvisoriesController#accept` now calls `record_accept!` and `#override` calls
 `record_override!` on the order's `ShopThreshold` — closing the learning loop (reject →

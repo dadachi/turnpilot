@@ -27,4 +27,10 @@ class Order < ApplicationRecord
   end
 
   def wait_minutes(now = Time.current) = (wait_seconds(now) / 60.0).round(1)
+
+  # True when a same-kind advisory was overridden within the suppression window — staff
+  # just rejected this; don't re-advise until it lapses.
+  def suppressed?(kind: "walk_away_risk", window: Advisory::SUPPRESSION_WINDOW)
+    advisories.overridden.where(kind: kind).where(created_at: window.ago..).exists?
+  end
 end

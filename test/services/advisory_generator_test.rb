@@ -73,6 +73,18 @@ class AdvisoryGeneratorTest < ActiveSupport::TestCase
     assert_equal "", advisory.suggested_action
   end
 
+  test "stays quiet (nil, no persist, no Gemma call) when a similar advisory was overridden" do
+    order = flagged_order
+    order.advisories.create!(kind: "walk_away_risk", status: :overridden, text: "earlier")
+    called = false
+    stubbing(GemmaClient, :advise, ->(*, **) { called = true; ADVICE }) do
+      assert_no_difference -> { Advisory.count } do
+        assert_nil AdvisoryGenerator.for(order, now: NOW)
+      end
+    end
+    assert_not called, "Gemma must not be called while suppressed"
+  end
+
   test "returns nil and persists nothing when Gemma errors" do
     order = flagged_order
     raiser = ->(*, **) { raise GemmaClient::Error, "ollama unreachable" }
