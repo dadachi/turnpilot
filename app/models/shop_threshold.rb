@@ -16,6 +16,12 @@ class ShopThreshold < ApplicationRecord
     find_or_create_by!(shop_id: shop_id) { |t| t.risk_multiplier = BASELINE }
   end
 
+  # Read-only current multiplier (BASELINE if none learned yet). Safe to call from views —
+  # unlike `.for`, it never creates a row.
+  def self.multiplier_for(shop_id)
+    find_by(shop_id: shop_id)&.risk_multiplier || BASELINE
+  end
+
   def record_override! = adjust(OVERRIDE_STEP, :override_count)
   def record_accept!   = adjust(-ACCEPT_STEP, :accept_count)
 
