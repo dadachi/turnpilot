@@ -14,7 +14,7 @@
   <%= render "status" %>
   <%= render "queue" %>
 
-  <div id="advisories" class="space-y-3">
+  <div id="advisories" class="space-y-3" data-controller="chime">
     <%= render Advisory.recent.limit(20) %>
   </div>
 </div>

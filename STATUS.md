@@ -18,7 +18,7 @@
 - [x] **Real-time ticking replayer** — `console#tick` + Stimulus `replay_controller` poll; rush plays out live via Turbo
 - [x] **Tests** for `Order` math (9) + advisory trigger (4, Gemma+broadcast stubbed, offline)
 - [x] Tighten Gemma prompt so `advise` is a strict boolean — prompt hardened + `advise?` coercion; `advise:false` now vetoes the alert
-- [ ] Add a sound/toast on new advisory; a compact live queue strip
+- [x] Sound on new advisory (WebAudio chime) + compact live queue strip (both UI — need morning smoke-test)
 
 ## Next breadth (after v1 is solid)
 open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from stats.
@@ -27,6 +27,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Advisory chime (2026-07-04) — completes the last v1 checklist item ✅
+`chime_controller` (Stimulus) on #advisories: a MutationObserver plays a short synthesized
+WebAudio beep (rising 880→1320 Hz, no asset, offline) when a new advisory is prepended.
+Audio unlocks on the "Run rush" click. **v1 checklist now fully checked off.** UI/audio —
+needs a morning browser smoke-test. Next: breadth items (open-a-server, ETA, no-show).
+
 ### Compact live queue strip (2026-07-04) — queue-strip half of the last v1 item
 `console/_queue` partial: chips for each cooking order (`#N · Xm`), flagged ones in advisory
 pink, sorted by cook time; broadcast on each `tick` alongside status. Rendered on index.
