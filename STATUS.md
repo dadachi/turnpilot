@@ -27,6 +27,15 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Ops (2026-07-04) — Dependabot bumps merged + CI fix + main protected
+Merged all 4 Dependabot PRs: `image_processing` 1.14→2.0.2 (unused gem, no-op),
+GH Actions `checkout` 6→7, `cache` 4→6, `upload-artifact` 4→7. They were all red on a
+**pre-existing `main` bug** (not the bumps): CI ran `test:system` with no `test/system`
+dir → `LoadError`, plus a rubocop offense in `gemma_client.rb`. Fixed both in PR #5
+(added `test/system/.keep`; autocorrected bracket spacing). Then protected `main`:
+required status checks gate bot PRs, but `enforce_admins:false` + no required reviews
+so the overnight direct-to-`main` loop is untouched; repo auto-merge enabled.
+
 ### Cycle 0 (kickoff, ~19:xx JST) — v1 slice built + verified in browser
 Scaffold (Rails 8.1.3, Tailwind Palette 9, Postgres, UUID) → GemmaClient → Order/Advisory
 models → Replayer → Turbo console. Verified live: real Gemma advisory streamed with
