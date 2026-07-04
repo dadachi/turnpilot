@@ -27,6 +27,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Learned-threshold model (2026-07-04) — Override foundation (step 1/4)
+Added `ShopThreshold` (uuid, per-shop `risk_multiplier`, override/accept counts) +
+migration. `record_override!` raises sensitivity (advise less), `record_accept!` drifts
+back toward baseline; clamped [1.0, 4.0]. 5 tests. Not yet wired into `Order#flagged?` —
+next: pass the learned multiplier into the situational model + the override suppression window.
+
 ### Tests (2026-07-04) — first real coverage on the demo path
 `test/models/order_test.rb` (9): `wait_seconds`, `walk_away_risk`, `flagged?` incl. the
 540s/9-min boundary, `wait_minutes` — in-memory `Order.new` + fixed `NOW`, no DB/Ollama.
