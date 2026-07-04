@@ -19,7 +19,7 @@ class GemmaClient
   def advise(prompt, num_predict: 400, temperature: 0.2)
     res = post("/api/chat", {
       model: MODEL, stream: false, think: false, format: "json",
-      messages: [{ role: "user", content: prompt }],
+      messages: [ { role: "user", content: prompt } ],
       options: { temperature:, num_predict: }
     })
     content = res.dig("message", "content").to_s
