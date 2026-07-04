@@ -30,7 +30,7 @@ class AdvisoryGenerator
   def build_snapshot
     {
       shop: "Cafe demo",
-      baseline_cook_min: Order::BASELINE_COOK_SECONDS / 60,
+      baseline_cook_min: (Order.baseline_cook_seconds(@order.shop_id) / 60.0).round(1),
       cooking_now: Order.live(@now).count,
       slow_order: {
         queue_number: @order.queue_number,

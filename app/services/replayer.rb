@@ -49,9 +49,10 @@ class Replayer
   def self.tick(limit: 3, now: Time.current)
     advance(now)
     threshold = Hash.new { |h, sid| h[sid] = ShopThreshold.for(sid).risk_multiplier }
+    baseline = Hash.new { |h, sid| h[sid] = Order.baseline_cook_seconds(sid) }
     Order.live(now)
-         .select { |o| o.flagged?(now, threshold: threshold[o.shop_id]) }
-         .sort_by { |o| -o.walk_away_risk(now, threshold: threshold[o.shop_id]) }
+         .select { |o| o.flagged?(now, threshold: threshold[o.shop_id], baseline: baseline[o.shop_id]) }
+         .sort_by { |o| -o.walk_away_risk(now, threshold: threshold[o.shop_id], baseline: baseline[o.shop_id]) }
          .reject { |o| o.advisories.pending.exists? || o.suppressed? }
          .first(limit)
          .filter_map { |o| AdvisoryGenerator.for(o, now: now) }
