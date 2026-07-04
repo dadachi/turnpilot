@@ -35,6 +35,9 @@ streaming NFC event feed drives **plain-language advisories** with a one-tap
   advisory/alert, Green = Accept, Red = danger, Yellow = warning, Cool Grey = text/neutrals.
 - **Keep main always green.** Small verified increments; never leave a half-done refactor.
 - Every change: run tests before commit. A broken build is worse than a missing feature.
+- **After a PR merges, delete its branch on BOTH remote and local.** Auto-merge's
+  `--delete-branch` is unreliable, so verify: `git push origin --delete <branch>` +
+  `git branch -D <branch>`, then `git remote prune origin`. Leave only `main`.
 - Deterministic event replayer so the demo is reproducible (fixed stream/seed).
 
 ## Autonomous overnight loop (Sat 9:30 PM → Sun 7:00 AM JST)
