@@ -1,8 +1,11 @@
+<% baselines = Hash.new { |h, sid| h[sid] = Order.baseline_cook_seconds(sid) } %>
 <div id="queue" class="mb-4 flex flex-wrap gap-2">
   <% Order.live.select(&:cooking?).sort_by { |o| -o.cook_seconds }.each do |o| %>
+    <% base = baselines[o.shop_id] %>
+    <% overdue = o.cook_seconds >= base %>
     <span class="rounded-lg px-2.5 py-1 text-xs font-semibold tabular-nums
-                 <%= o.flagged? ? "bg-advisory-100 text-advisory-500" : "bg-brand-50 text-muted" %>">
-      #<%= o.queue_number %> · <%= o.cook_minutes %>m
+                 <%= overdue ? "bg-advisory-100 text-advisory-500" : "bg-brand-50 text-muted" %>">
+      #<%= o.queue_number %> · <%= o.cook_minutes %>m<%= overdue ? " · overdue" : " · ~#{o.eta_minutes(baseline: base)}m left" %>
     </span>
   <% end %>
 </div>

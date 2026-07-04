@@ -40,6 +40,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### ETA-to-customer (2026-07-04) — breadth #2 (honest = remaining cook time)
+`Order#eta_seconds`/`#eta_minutes` = time left to the shop's normal cook time (0 when
+overdue, nil when not cooking) — the only honest ETA (no pre-cook ETA without a join). Queue
+strip now shows a live countdown per chip ("~Xm left" → "overdue"), using each shop's learned
+baseline. +3 tests → 48 green. UI — **needs morning smoke-test**.
+
 ### Open-a-server advisory (2026-07-04) — breadth #1 ✅ (2nd advisory type)
 `OpenServerAdvisor`: when a shop's backlog (`cooking_count`) ≥ 5 and exceeds recent
 completions (falling behind), asks Gemma for a shop-level `open_server` advisory (order-less),

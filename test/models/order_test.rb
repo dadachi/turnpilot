@@ -123,6 +123,22 @@ class OrderTest < ActiveSupport::TestCase
     assert_equal Order::BASELINE_COOK_SECONDS, Order.baseline_cook_seconds(SHOP)
   end
 
+  # --- eta_seconds (remaining cook time) ---------------------------------
+
+  test "eta_seconds is the remaining time to the baseline while cooking" do
+    assert_equal 240, cooking(120).eta_seconds(NOW)                 # 360 - 120
+    assert_in_delta 4.0, cooking(120).eta_minutes(NOW), 0.001
+  end
+
+  test "eta_seconds is 0 once the order is overdue" do
+    assert_equal 0, cooking(500).eta_seconds(NOW)                   # past the 360s baseline
+  end
+
+  test "eta_seconds is nil when not cooking, and honors a custom baseline" do
+    assert_nil Order.new(status: :waiting, joined_at: NOW - 60).eta_seconds(NOW)
+    assert_equal 180, cooking(120).eta_seconds(NOW, baseline: 300)  # 300 - 120
+  end
+
   # --- shop-level throughput signals (open-a-server) ---------------------
 
   test "cooking_count counts only actively-cooking orders for the shop" do
