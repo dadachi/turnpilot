@@ -43,12 +43,26 @@ class Replayer
     Order.live(now).count
   end
 
+  TICK_LOCK_KEY = 4271 # arbitrary constant key for the advisory lock below
+
   # Advance the clock, then generate advisories for the most-at-risk flagged orders that
   # lack a pending one. Flagging uses each shop's LEARNED threshold (raised by staff
   # Overrides), memoized per shop so we hit ShopThreshold once per shop, not once per order.
+  #
+  # Serialized with a Postgres advisory lock: a tick makes several slow Gemma calls, and the
+  # live poller (plus the Run-rush tick) can overlap. Concurrent ticks would race the
+  # "already has a pending advisory?" / suppression checks and create duplicates, so an
+  # overlapping tick simply no-ops instead.
   def self.tick(limit: 3, now: Time.current)
-    advance(now)
-    walk_away(now, limit) + open_server(now)
+    conn = ActiveRecord::Base.connection
+    return [] if conn.select_value("SELECT pg_try_advisory_lock(#{TICK_LOCK_KEY})::int").to_i.zero?
+
+    begin
+      advance(now)
+      walk_away(now, limit) + open_server(now)
+    ensure
+      conn.execute("SELECT pg_advisory_unlock(#{TICK_LOCK_KEY})")
+    end
   end
 
   # Per-order walk-away-risk advisories for the most-at-risk flagged orders. Flagging uses

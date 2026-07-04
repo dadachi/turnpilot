@@ -8,9 +8,9 @@
 - **v1 walk-away-risk path:** ✅ end-to-end (seed → cook-overrun flag → Gemma advisory → Turbo console → Accept/Override → learns)
 - **Advisory types:** walk-away-risk (per-order cook overrun) + open-a-server (shop throughput). ETA countdown in the queue strip.
 - **Demo replayable from `synthetic_rush.json`:** ✅ (`Replayer.seed` + ticking `Replayer.tick`; visit `/`, click "Run rush")
-- **⚠️ Morning smoke-test (5 min):** the live/queue/chime/learning UI is test-covered server-side but NOT visually
-  verified — run `bin/dev` + Ollama, click "Run rush", confirm advisories stream in with a chime, queue strip counts
-  down, and "alerts after ~Ym" rises when you Override. (Details in Blockers below.)
+- **✅ Browser smoke-test done (2026-07-05):** live demo verified end-to-end with real Gemma + Ollama — both advisory
+  types stream in, queue strip counts down (ETA), Override raised "alerts after" 7.9m→8.7m. Found + fixed 2 bugs
+  (duplicate advisories from overlapping ticks; Override crash on order-less advisories). No console errors.
 
 ## v1 acceptance checklist
 - [x] Rails app boots (8.1.3 / Ruby 4.0.5); Postgres; UUID PKs; Tailwind (Palette 9)
@@ -28,10 +28,9 @@
 open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from stats.
 
 ## Blockers / questions for the human (read first)
-- **Morning smoke-test (browser + Ollama):** the live ticking demo, queue strip, and
-  advisory chime are test-covered server-side but **not visually verified**. Run `bin/dev`,
-  open `/`, click "Run rush", confirm advisories stream in with a chime and the queue strip
-  updates. (5-min check.)
+- **Smoke-test: DONE ✅ (2026-07-05)** — verified live in-browser with real Gemma. (One thing
+  to eyeball yourself: the WebAudio *chime* can't be asserted headlessly — confirm you hear it
+  when an advisory arrives.)
 - **Breadth-item honesty (before building them):** under the real model, some planned
   breadth items need signals MyTurnTag doesn't record —
   - `open-a-server` (throughput drop → open a prep station): ✅ honest (uses `completed_at`
@@ -44,6 +43,15 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Browser smoke-test — 2 bugs found + fixed (2026-07-05)
+Drove the live demo in a browser (real Gemma/Ollama). Works end-to-end: both advisory types
+stream in, queue strip ETA counts down, Override raised "alerts after" 7.9m→8.7m, no console
+errors. **Bug 1:** overlapping slow ticks (Run-rush tick + 4s poller) raced the suppression
+check → duplicate advisories piled up. Fixed with a Postgres advisory lock in `Replayer.tick`
+(overlapping ticks no-op) + the Stimulus poller now chains (schedule next only after the
+current finishes). **Bug 2:** Override/Accept on an order-less `open_server` advisory hit
+`@advisory.order.shop_id` (nil) → use `@advisory.shop_id`. +1 test → 56 green.
+
 ### GemmaClient parse coverage + overnight wrap-up (2026-07-05)
 Extracted `GemmaClient.parse_content` (JSON-object extraction from message content, incl.
 prose/fence wrapping) and covered it (+3 tests → 55 green) — the last untested load-bearing
