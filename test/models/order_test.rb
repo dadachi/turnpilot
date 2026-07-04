@@ -60,6 +60,14 @@ class OrderTest < ActiveSupport::TestCase
     assert_not Order.new(status: :completed, joined_at: long_ago, completed_at: NOW).flagged?(NOW)
   end
 
+  test "a raised (learned) threshold un-flags a borderline order" do
+    order = waiting(600) # 10 min: past baseline 540s, under a 720s (×2.0) window
+    assert order.flagged?(NOW), "flagged at the baseline multiplier"
+    assert_not order.flagged?(NOW, threshold: 2.0), "not flagged once the shop threshold is raised"
+    # risk also drops as the threshold widens
+    assert order.walk_away_risk(NOW) > order.walk_away_risk(NOW, threshold: 2.0)
+  end
+
   # --- wait_minutes -------------------------------------------------------
 
   test "wait_minutes converts seconds to minutes rounded to 0.1" do

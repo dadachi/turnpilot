@@ -32,9 +32,13 @@ class Replayer
   end
 
   # Generate advisories for the most-at-risk flagged orders lacking a pending one.
+  # Flagging uses each shop's LEARNED threshold (raised by staff Overrides), memoized
+  # per shop so we hit ShopThreshold once per shop, not once per order.
   def self.tick(limit: 3)
-    Order.open.select(&:flagged?)
-         .sort_by { |o| -o.walk_away_risk }
+    threshold = Hash.new { |h, sid| h[sid] = ShopThreshold.for(sid).risk_multiplier }
+    Order.open
+         .select { |o| o.flagged?(threshold: threshold[o.shop_id]) }
+         .sort_by { |o| -o.walk_away_risk(threshold: threshold[o.shop_id]) }
          .reject { |o| o.advisories.pending.exists? }
          .first(limit)
          .filter_map { |o| AdvisoryGenerator.for(o) }

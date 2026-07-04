@@ -27,6 +27,13 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Wire learned threshold into situational model (2026-07-04) — Override step 2/4
+`Order#flagged?`/`#walk_away_risk` now take a `threshold:` multiplier (defaults to the
+baseline constant, so existing behavior is unchanged). `Replayer.tick` resolves each
+shop's learned `ShopThreshold.risk_multiplier` (memoized per shop) and flags/ranks with
+it — so a raised threshold advises less. +1 test (raised threshold un-flags a borderline
+order). Next: override suppression window + controller feeds Accept/Override back to the threshold.
+
 ### Learned-threshold model (2026-07-04) — Override foundation (step 1/4)
 Added `ShopThreshold` (uuid, per-shop `risk_multiplier`, override/accept counts) +
 migration. `record_override!` raises sensitivity (advise less), `record_accept!` drifts
