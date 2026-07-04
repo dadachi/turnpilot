@@ -22,7 +22,8 @@ class AdvisoriesController < ApplicationController
   end
 
   def learned_threshold
-    ShopThreshold.for(@advisory.order.shop_id)
+    # Use the advisory's own shop_id — shop-level advisories (open_server) have no order.
+    ShopThreshold.for(@advisory.shop_id)
   end
 
   def broadcast
