@@ -63,6 +63,23 @@ class Order < ApplicationRecord
     (durations.sum.to_f / durations.size).round
   end
 
+  # --- shop-level throughput signals (feed the open-a-server advisory) -----
+  # Both derive only from recorded staff timestamps (prepared/completed), so they stay
+  # honest under the real MyTurnTag model.
+
+  # Orders actively cooking (prepared, not yet completed) for a shop at `now` — the backlog.
+  # Defined purely by the cook timestamps, independent of when the tag was created.
+  scope :cooking_at, ->(t = Time.current) { where(prepared_at: ..t).not_completed_by(t) }
+
+  def self.cooking_count(shop_id, now = Time.current)
+    cooking_at(now).where(shop_id: shop_id).count
+  end
+
+  # Completions in the trailing `window` — the rolling throughput numerator.
+  def self.completions_in(shop_id, window, now = Time.current)
+    where(shop_id: shop_id).where(completed_at: (now - window)..now).count
+  end
+
   # True when a same-kind advisory was overridden within the suppression window — staff
   # just rejected this; don't re-advise until it lapses.
   def suppressed?(kind: "walk_away_risk", window: Advisory::SUPPRESSION_WINDOW)

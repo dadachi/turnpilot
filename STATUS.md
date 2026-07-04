@@ -40,6 +40,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Throughput signals (2026-07-04) — open-a-server groundwork
+`Order.cooking_count(shop_id)` (backlog, via a `cooking_at` scope — prepared & not completed,
+join-independent) and `Order.completions_in(shop_id, window)` (rolling throughput). Both from
+staff timestamps only, so honest. +2 tests → 40 green. Next: `OpenServerAdvisor` uses these
+(backlog high + throughput can't clear it → Gemma → shop-level `open_server` advisory).
+
 ### Shop-scoped advisories (2026-07-04) — breadth prep for open-a-server
 Advisories can now be shop-level: added `advisories.shop_id`, made `order_id` nullable,
 `belongs_to :order, optional: true`. `AdvisoryGenerator` stamps `shop_id`; the card shows
