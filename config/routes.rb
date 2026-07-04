@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   root "console#index"
   get  "console",      to: "console#index", as: :console
   post "console/demo", to: "console#demo",  as: :console_demo
+  post "console/tick", to: "console#tick",  as: :console_tick
 
   resources :advisories, only: [] do
     member do

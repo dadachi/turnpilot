@@ -15,7 +15,7 @@
 - [x] Local Gemma 4 advisory via `GemmaClient` (Ollama /api/chat, think:false, format:json)
 - [x] Advisory streams to console via Turbo; Accept/Override buttons render
 - [x] **Override suppresses similar advisories + feeds back a learned threshold** — `ShopThreshold` + suppression window (`Advisory::SUPPRESSION_WINDOW`)
-- [ ] **Real-time accelerated replayer** (currently seed anchors mid-rush; add a ticking clock)
+- [x] **Real-time ticking replayer** — `console#tick` + Stimulus `replay_controller` poll; rush plays out live via Turbo
 - [x] **Tests** for `Order` math (9) + advisory trigger (4, Gemma+broadcast stubbed, offline)
 - [ ] Tighten Gemma prompt so `advise` is a strict boolean (model returned a label)
 - [ ] Add a sound/toast on new advisory; a compact live queue strip
@@ -27,6 +27,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Ticking replayer — live driver (2026-07-04) — real-time replay step 2/2 ✅ complete
+`console#tick` advances the sim (`Replayer.tick` on wall-clock `now`) and broadcasts the
+refreshed status strip; a Stimulus `replay_controller` polls it every 4s, so the seeded rush
+plays out live and advisories stream in over Turbo. Extracted `console/_status` partial
+(cooking / at-risk counts). +2 controller tests (tick makes no Gemma call when nothing's
+flagged). 34 green. **Real-time replayer item checked off.** NOTE: browser-side polling not
+yet visually verified (no live app/Ollama run this cycle) — smoke-test in the morning.
+
 ### Model pivot 2/2 (2026-07-04) — data-driven baseline + DESIGN corrected
 `Order.baseline_cook_seconds(shop_id)` = avg(`completed_at − prepared_at`) over recent
 completed tags, fallback to the constant under `min_samples`. Wired into `Replayer.tick`

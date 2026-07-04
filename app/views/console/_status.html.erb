@@ -1,0 +1,5 @@
+<div id="status" class="mb-4 text-sm text-muted">
+  <%= Order.live.count %> cooking ·
+  <span class="font-semibold text-advisory-500"><%= Order.live.select(&:flagged?).count %> at risk</span>
+  · reasoning on Gemma 4, on-device
+</div>
