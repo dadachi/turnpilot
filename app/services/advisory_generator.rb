@@ -11,7 +11,7 @@ class AdvisoryGenerator
   def call
     return nil if @order.suppressed? # staff overrode a similar advisory recently — stay quiet
     result = GemmaClient.advise(prompt(build_snapshot))
-    return nil unless advise?(result["advise"]) # Gemma decided it's not worth interrupting staff
+    return nil unless Advisory.advise?(result["advise"]) # Gemma decided it's not worth interrupting staff
     advisory = @order.advisories.create!(
       kind: "walk_away_risk",
       status: :pending,
@@ -28,15 +28,6 @@ class AdvisoryGenerator
   end
 
   private
-
-  # Coerce Gemma's `advise` into a strict boolean. Gemma occasionally returns a string
-  # ("false", "no") or a label instead of a JSON boolean, so accept those; but default to
-  # advising whenever the value is ambiguous, so a fuzzy response never drops a real alert.
-  def advise?(value)
-    return value if [ true, false ].include?(value)
-
-    !%w[false no 0 none skip never].include?(value.to_s.strip.downcase)
-  end
 
   def build_snapshot
     {

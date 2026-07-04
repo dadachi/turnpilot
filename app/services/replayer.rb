@@ -48,6 +48,12 @@ class Replayer
   # Overrides), memoized per shop so we hit ShopThreshold once per shop, not once per order.
   def self.tick(limit: 3, now: Time.current)
     advance(now)
+    walk_away(now, limit) + open_server(now)
+  end
+
+  # Per-order walk-away-risk advisories for the most-at-risk flagged orders. Flagging uses
+  # each shop's LEARNED threshold and baseline (memoized per shop).
+  def self.walk_away(now, limit)
     threshold = Hash.new { |h, sid| h[sid] = ShopThreshold.for(sid).risk_multiplier }
     baseline = Hash.new { |h, sid| h[sid] = Order.baseline_cook_seconds(sid) }
     Order.live(now)
@@ -56,5 +62,11 @@ class Replayer
          .reject { |o| o.advisories.pending.exists? || o.suppressed? }
          .first(limit)
          .filter_map { |o| AdvisoryGenerator.for(o, now: now) }
+  end
+
+  # One shop-level open-a-server advisory per shop that's falling behind.
+  def self.open_server(now)
+    Order.live(now).distinct.pluck(:shop_id).compact
+         .filter_map { |sid| OpenServerAdvisor.for(sid, now: now) }
   end
 end

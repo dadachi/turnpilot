@@ -40,6 +40,13 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Open-a-server advisory (2026-07-04) — breadth #1 ✅ (2nd advisory type)
+`OpenServerAdvisor`: when a shop's backlog (`cooking_count`) ≥ 5 and exceeds recent
+completions (falling behind), asks Gemma for a shop-level `open_server` advisory (order-less),
+with its own window suppression + advise-veto. Hooked into `Replayer.tick` per shop. Shared
+`Advisory.advise?` coercion (refactored out of AdvisoryGenerator). Demo fires it at the anchor
+(5 cooking vs 4 completed) alongside walk-away. +5 tests → 45 green.
+
 ### Throughput signals (2026-07-04) — open-a-server groundwork
 `Order.cooking_count(shop_id)` (backlog, via a `cooking_at` scope — prepared & not completed,
 join-independent) and `Order.completions_in(shop_id, window)` (rolling throughput). Both from
