@@ -47,3 +47,4 @@
 # gstack tooling runtime state (logs, PIDs, ports, session tokens) — machine-local, never commit.
 /.gstack/
 
+.gstack/
