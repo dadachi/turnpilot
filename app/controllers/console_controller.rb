@@ -14,6 +14,7 @@ class ConsoleController < ApplicationController
   def tick
     Replayer.tick
     broadcast_status
+    broadcast_queue
     head :ok
   end
 
@@ -21,5 +22,9 @@ class ConsoleController < ApplicationController
 
   def broadcast_status
     Turbo::StreamsChannel.broadcast_replace_to("console", target: "status", partial: "console/status")
+  end
+
+  def broadcast_queue
+    Turbo::StreamsChannel.broadcast_replace_to("console", target: "queue", partial: "console/queue")
   end
 end

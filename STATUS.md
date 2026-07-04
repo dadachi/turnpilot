@@ -27,6 +27,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Compact live queue strip (2026-07-04) — queue-strip half of the last v1 item
+`console/_queue` partial: chips for each cooking order (`#N · Xm`), flagged ones in advisory
+pink, sorted by cook time; broadcast on each `tick` alongside status. Rendered on index.
+Tests green (36). UI-only — **needs a morning browser smoke-test**. Chime/toast on new
+advisory still to do (the other half of this checklist item).
+
 ### Strict-boolean Gemma advise gate (2026-07-04)
 Hardened the Gemma prompt (advise must be a JSON boolean, JSON-only, snake_case action) and
 added `AdvisoryGenerator#advise?` coercion — `advise:false`/"no" now vetoes the alert (no
