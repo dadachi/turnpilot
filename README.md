@@ -1,7 +1,7 @@
 # TurnPilot
 
 **A live queue-ops copilot for walk-in shops.** TurnPilot watches a streaming NFC
-queue-event feed, builds a situational model of who's waiting, and turns it into
+queue-event feed, builds a situational model of the kitchen, and turns it into
 **plain-language advisories** with a one-tap **Accept / Override** loop. All reasoning
 runs on **local Gemma 4 via Ollama — offline, on-device, privacy-first**. No cloud calls.
 
@@ -11,25 +11,36 @@ loop, not a wall of charts.
 > Built entirely during the event. See [`docs/DESIGN.md`](docs/DESIGN.md) for the full
 > design spec and [`STATUS.md`](STATUS.md) for current build status.
 
+## The honest signal
+
+MyTurnTag records only **staff** actions on a tag — `prepared` (cooking started) and
+`completed` (cooking finished). There is **no recorded "customer joined" event** (tags are
+pre-provisioned), so TurnPilot never models a pre-cook wait. The one trustworthy real-time
+signal is **cook-time overrun**: an order that's been cooking longer than this shop's normal
+→ the waiting customer may walk away. (See [`docs/DESIGN.md`](docs/DESIGN.md) for the full
+data-model rationale, and applies to shops in `preparing_mode`.)
+
 ## How it works
 
 ```
-NFC event feed ──▶ Replayer ──▶ Order situational model ──▶ flagged? ──▶ AdvisoryGenerator
-(synthetic_rush.json)            (wait / walk-away-risk)                        │
-                                                                    Gemma 4 (Ollama /api/chat)
-                                                                                │
-                                          Turbo Stream ──▶ Console (Accept / Override)
+NFC event feed ──▶ Replayer ──▶ Order situational model ──▶ flagged? ──▶ Advisor ──▶ Gemma 4
+(synthetic_rush.json)  (ticks)   (cook overrun · throughput)             │      (Ollama /api/chat)
+                                                                         ▼
+                                     Turbo Stream ──▶ Console (Accept / Override · learns)
 ```
 
-- **Situational model** — `Order` computes per-order wait time and a `walk_away_risk`
-  vs. the shop baseline; `Order#flagged?` fires when a customer waits past the threshold
-  (baseline 6 min × 1.5 = **9 min**).
-- **Reasoning** — `AdvisoryGenerator` builds a snapshot for a flagged order and asks
-  `GemmaClient` (local Gemma 4) for one short, actionable advisory as JSON.
-- **Delivery** — the advisory is broadcast to the console over Turbo Streams; staff
-  **Accept** or **Override** it.
-- **Reproducible demo** — a deterministic `Replayer` seeds a fixed rush from
-  `synthetic_rush.json`, so the live demo is repeatable.
+- **Situational model** — `Order#cook_seconds` = `prepared → now` (frozen at `completed`);
+  `Order#flagged?` fires when cook time exceeds the shop's **learned** baseline cook time
+  (`avg(completed − prepared)`) × a per-shop sensitivity multiplier.
+- **Two advisory types** — `AdvisoryGenerator` (per-order **walk-away risk** from cook
+  overrun) and `OpenServerAdvisor` (shop-level **open-a-server** when the cooking backlog
+  outpaces recent completions). Both ask `GemmaClient` (local Gemma 4) for one short JSON advisory.
+- **Learning loop** — staff **Accept** / **Override** each advisory; Override raises the
+  shop's sensitivity (advise less) and suppresses similar advisories for a window, and the
+  console shows the "alerts after ~Ym" threshold moving as it adapts.
+- **Live & reproducible** — a deterministic `Replayer` seeds a fixed rush from
+  `synthetic_rush.json` and a Stimulus poller ticks the clock, so the rush plays out live
+  and the demo is repeatable. The queue strip shows each cooking order's ETA countdown.
 
 ## Stack
 
