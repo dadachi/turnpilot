@@ -147,3 +147,97 @@ FOREIGN KEY ("order_id")
   Rendered advisories/_advisory.html.erb (Duration: 14.1ms | GC: 0.0ms)
 [ActionCable] Broadcasting to console: "<turbo-stream action=\"prepend\" target=\"advisories\"><template><!-- BEGIN app/views/advisories/_advisory.html.erb\n--><div id=\"advisory_df28677d-5a98-4bf6-add1-a942cdf486c9\" class=\"rounded-xl border border-brand-100 bg-white p-4 shadow-sm\">\n  <div class=\"flex items-center justify-between...
   Rendered advisories/_advisory.html.erb (Duration: 0.2ms | GC: 0.0ms)
+  [1m[36mOrder Delete All (6.5ms)[0m  [1m[31mDELETE FROM "orders" /*application='Turnpilot'*/[0m
+Started GET "/up" for 127.0.0.1 at 2026-07-04 19:37:34 +0900
+  [1m[36mActiveRecord::SchemaMigration Load (1.8ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Turnpilot'*/[0m
+Processing by Rails::HealthController#show as */*
+  Rendering html template
+  Rendered html template (Duration: 0.0ms | GC: 0.0ms)
+Completed 200 OK in 7ms (Views: 3.0ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/" for 127.0.0.1 at 2026-07-04 19:37:34 +0900
+Processing by ConsoleController#index as */*
+  Rendering layout layouts/application.html.erb
+  Rendering console/index.html.erb within layouts/application
+  [1m[36mOrder Count (0.8ms)[0m  [1m[34mSELECT COUNT(*) FROM "orders" WHERE "orders"."status" != 2 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:13
+  [1m[36mOrder Load (0.2ms)[0m  [1m[34mSELECT "orders".* FROM "orders" WHERE "orders"."status" != 2 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:14
+  [1m[36mAdvisory Load (0.7ms)[0m  [1m[34mSELECT "advisories".* FROM "advisories" ORDER BY "advisories"."created_at" DESC LIMIT 20 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:19
+  [1m[36mOrder Load (0.2ms)[0m  [1m[34mSELECT "orders".* FROM "orders" WHERE "orders"."id" = '82cd97c4-3496-4c51-9f08-ff8e6e275921' LIMIT 1 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/advisories/_advisory.html.erb:5
+  Rendered collection of advisories/_advisory.html.erb [1 times] (Duration: 3.3ms | GC: 0.0ms)
+  Rendered console/index.html.erb within layouts/application (Duration: 47.9ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 52.4ms | GC: 0.0ms)
+Completed 200 OK in 70ms (Views: 35.6ms | ActiveRecord: 18.2ms (4 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/" for 127.0.0.1 at 2026-07-04 19:37:55 +0900
+Processing by ConsoleController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering console/index.html.erb within layouts/application
+  [1m[36mOrder Count (0.6ms)[0m  [1m[34mSELECT COUNT(*) FROM "orders" WHERE "orders"."status" != 2 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:13
+  [1m[36mOrder Load (1.2ms)[0m  [1m[34mSELECT "orders".* FROM "orders" WHERE "orders"."status" != 2 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:14
+  [1m[36mAdvisory Load (0.3ms)[0m  [1m[34mSELECT "advisories".* FROM "advisories" ORDER BY "advisories"."created_at" DESC LIMIT 20 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:19
+  [1m[36mOrder Load (0.4ms)[0m  [1m[34mSELECT "orders".* FROM "orders" WHERE "orders"."id" = '82cd97c4-3496-4c51-9f08-ff8e6e275921' LIMIT 1 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/advisories/_advisory.html.erb:5
+  Rendered collection of advisories/_advisory.html.erb [1 times] (Duration: 1.5ms | GC: 0.0ms)
+  Rendered console/index.html.erb within layouts/application (Duration: 6.3ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 6.6ms | GC: 0.0ms)
+Completed 200 OK in 7ms (Views: 4.4ms | ActiveRecord: 2.4ms (4 queries, 0 cached) | GC: 0.0ms)
+
+
+Unable to resolve 'image.svg' for missing asset 'image.svg' in tailwind.css
+Started GET "/cable" for 127.0.0.1 at 2026-07-04 19:37:55 +0900
+Started GET "/cable" [WebSocket] for 127.0.0.1 at 2026-07-04 19:37:56 +0900
+Successfully upgraded to WebSocket (REQUEST_METHOD: GET, HTTP_CONNECTION: Upgrade, HTTP_UPGRADE: websocket)
+Turbo::StreamsChannel is transmitting the subscription confirmation
+Turbo::StreamsChannel is streaming from console
+  [1m[36mOrder Delete All (4.0ms)[0m  [1m[31mDELETE FROM "orders" /*application='Turnpilot'*/[0m
+Started GET "/" for 127.0.0.1 at 2026-07-04 19:38:49 +0900
+Processing by ConsoleController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering console/index.html.erb within layouts/application
+  [1m[36mOrder Count (0.6ms)[0m  [1m[34mSELECT COUNT(*) FROM "orders" WHERE "orders"."status" != 2 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:13
+  [1m[36mOrder Load (0.3ms)[0m  [1m[34mSELECT "orders".* FROM "orders" WHERE "orders"."status" != 2 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:14
+  [1m[36mAdvisory Load (0.4ms)[0m  [1m[34mSELECT "advisories".* FROM "advisories" ORDER BY "advisories"."created_at" DESC LIMIT 20 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/console/index.html.erb:19
+  [1m[36mOrder Load (0.2ms)[0m  [1m[34mSELECT "orders".* FROM "orders" WHERE "orders"."id" = '82cd97c4-3496-4c51-9f08-ff8e6e275921' LIMIT 1 /*action='index',application='Turnpilot',controller='console'*/[0m
+  ↳ app/views/advisories/_advisory.html.erb:5
+  Rendered collection of advisories/_advisory.html.erb [1 times] (Duration: 1.1ms | GC: 0.0ms)
+  Rendered console/index.html.erb within layouts/application (Duration: 17.7ms | GC: 12.7ms)
+  Rendered layout layouts/application.html.erb (Duration: 18.0ms | GC: 12.7ms)
+Completed 200 OK in 19ms (Views: 16.8ms | ActiveRecord: 1.4ms (4 queries, 0 cached) | GC: 12.7ms)
+
+
+Started GET "/cable" for 127.0.0.1 at 2026-07-04 19:38:49 +0900
+Started GET "/cable" [WebSocket] for 127.0.0.1 at 2026-07-04 19:38:49 +0900
+Successfully upgraded to WebSocket (REQUEST_METHOD: GET, HTTP_CONNECTION: Upgrade, HTTP_UPGRADE: websocket)
+Turbo::StreamsChannel is transmitting the subscription confirmation
+Turbo::StreamsChannel is streaming from console
+  [1m[36mOrder Count (29.6ms)[0m  [1m[34mSELECT COUNT(*) FROM "orders" /*application='Turnpilot'*/[0m
+Started GET "/cable" for 127.0.0.1 at 2026-07-04 19:42:24 +0900
+  [1m[36mActiveRecord::SchemaMigration Load (0.9ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='Turnpilot'*/[0m
+Started GET "/cable" [WebSocket] for 127.0.0.1 at 2026-07-04 19:42:24 +0900
+Successfully upgraded to WebSocket (REQUEST_METHOD: GET, HTTP_CONNECTION: Upgrade, HTTP_UPGRADE: websocket)
+Turbo::StreamsChannel is transmitting the subscription confirmation
+Turbo::StreamsChannel is streaming from console
+Started GET "/cable" for 127.0.0.1 at 2026-07-04 19:42:24 +0900
+Started GET "/cable" [WebSocket] for 127.0.0.1 at 2026-07-04 19:42:24 +0900
+Successfully upgraded to WebSocket (REQUEST_METHOD: GET, HTTP_CONNECTION: Upgrade, HTTP_UPGRADE: websocket)
+Turbo::StreamsChannel is transmitting the subscription confirmation
+Turbo::StreamsChannel is streaming from console
+Started GET "/up" for 127.0.0.1 at 2026-07-04 19:42:27 +0900
+Processing by Rails::HealthController#show as */*
+  Rendering html template
+  Rendered html template (Duration: 0.0ms | GC: 0.0ms)
+Completed 200 OK in 10ms (Views: 5.0ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.4ms)
+
+

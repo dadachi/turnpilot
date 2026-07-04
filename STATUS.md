@@ -1,25 +1,33 @@
-# STATUS — TurnPilot (drop into the submission repo root at kickoff)
+# STATUS — TurnPilot
 
 > The overnight loop appends to this every cycle. Keep it short and current so a
-> human can triage in ~5 minutes at 7:00 AM JST. Newest cycle on top.
+> human can triage in ~5 minutes at wake-up. Newest cycle on top.
 
-## At-a-glance (update every cycle)
-- **Build health:** tests ⬜ pass / ⬜ fail · main ⬜ green · local Gemma (Ollama) ⬜ reachable
-- **v1 walk-away-risk path:** ⬜ not started / ⬜ partial / ⬜ working end-to-end
-- **Demo replayable from `synthetic_rush.json`:** ⬜ yes / ⬜ no
+## At-a-glance
+- **Build health:** tests ✅ pass (0 real tests yet) · main ✅ green · local Gemma 4 ✅ reachable
+- **v1 walk-away-risk path:** ✅ working end-to-end (seed → flag → Gemma advisory → Turbo console → Accept/Override)
+- **Demo replayable from `synthetic_rush.json`:** ✅ yes (`Replayer.seed` + `Replayer.tick`; visit `/` and "Run rush")
 
-## v1 acceptance checklist (the ONE path — do this first)
-- [ ] Rails app boots; Postgres up; UUID PKs; Tailwind (Palette 9) wired
-- [ ] Event replayer streams `joined/prepared/customer_read/completed` into the app
-- [ ] Situational model computes per-order wait + walk-away risk vs baseline
-- [ ] Local Gemma (Ollama) call returns a parseable advisory (see spike)
-- [ ] Advisory streams to the operator console via Turbo (chime + card)
-- [ ] Accept / Override both work; Override suppresses + is logged + feeds back
-- [ ] Tests cover the model math + the advisory trigger
-- [ ] Demo is reproducible from the fixed replay
+## v1 acceptance checklist
+- [x] Rails app boots (8.1.3 / Ruby 4.0.5); Postgres; UUID PKs; Tailwind (Palette 9)
+- [x] Replayer seeds the rush from `synthetic_rush.json` into Order records
+- [x] Situational model: per-order wait + walk-away risk vs baseline (`Order#flagged?`)
+- [x] Local Gemma 4 advisory via `GemmaClient` (Ollama /api/chat, think:false, format:json)
+- [x] Advisory streams to console via Turbo; Accept/Override buttons render
+- [ ] **Override should suppress similar advisories + feed back a learned threshold** (v1 gap)
+- [ ] **Real-time accelerated replayer** (currently seed anchors mid-rush; add a ticking clock)
+- [ ] **Tests** for `Order` math + advisory trigger (none yet — add first)
+- [ ] Tighten Gemma prompt so `advise` is a strict boolean (model returned a label)
+- [ ] Add a sound/toast on new advisory; a compact live queue strip
 
-## Blockers / questions for the human (read first at wake-up)
-- _(loop writes anything ambiguous or high-stakes here instead of guessing)_
+## Next breadth (after v1 is solid)
+open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from stats.
+
+## Blockers / questions for the human (read first)
+- _(none)_
 
 ## Cycle log (newest first)
-### Cycle N — <what changed, what works now, what's next> — commit <sha>
+### Cycle 0 (kickoff, ~19:xx JST) — v1 slice built + verified in browser
+Scaffold (Rails 8.1.3, Tailwind Palette 9, Postgres, UUID) → GemmaClient → Order/Advisory
+models → Replayer → Turbo console. Verified live: real Gemma advisory streamed with
+Accept/Override. Fixed a mixed vendor/bundle (Ruby 4.0.1↔4.0.5) so `bin/rails` is reliable.
