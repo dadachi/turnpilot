@@ -4,74 +4,83 @@ class OrderTest < ActiveSupport::TestCase
   # Fixed reference time so every case is deterministic (no wall-clock flake).
   NOW = Time.utc(2026, 7, 4, 12, 0, 0)
 
-  # Flag threshold = BASELINE_PREP_SECONDS * RISK_THRESHOLD = 360 * 1.5 = 540s (9 min).
-  THRESHOLD = Order::BASELINE_PREP_SECONDS * Order::RISK_THRESHOLD
+  # Flag window = BASELINE_COOK_SECONDS * RISK_THRESHOLD = 360 * 1.5 = 540s (9 min).
+  THRESHOLD = Order::BASELINE_COOK_SECONDS * Order::RISK_THRESHOLD
 
-  def waiting(seconds_ago)
-    Order.new(status: :waiting, joined_at: NOW - seconds_ago)
+  # An order that started cooking `seconds_ago` and hasn't completed.
+  def cooking(seconds_ago)
+    Order.new(status: :prepared, prepared_at: NOW - seconds_ago)
   end
 
-  # --- wait_seconds -------------------------------------------------------
+  # --- cook_seconds -------------------------------------------------------
 
-  test "wait_seconds counts from joined_at while waiting" do
-    assert_equal 300, waiting(300).wait_seconds(NOW)
+  test "cook_seconds counts from prepared_at while cooking" do
+    assert_equal 300, cooking(300).cook_seconds(NOW)
   end
 
-  test "wait_seconds freezes at prepared_at once prepared" do
-    order = Order.new(status: :prepared, joined_at: NOW - 600, prepared_at: NOW - 200)
-    # 400s elapsed before prep, and it must not keep growing after NOW.
-    assert_equal 400, order.wait_seconds(NOW)
-    assert_equal 400, order.wait_seconds(NOW + 999)
+  test "cook_seconds freezes at completed_at once cooking finishes" do
+    order = Order.new(status: :completed, prepared_at: NOW - 600, completed_at: NOW - 200)
+    # 400s of cooking, and it must not keep growing after completion.
+    assert_equal 400, order.cook_seconds(NOW)
+    assert_equal 400, order.cook_seconds(NOW + 999)
   end
 
-  test "wait_seconds is 0 for a completed order" do
-    order = Order.new(status: :completed, joined_at: NOW - 600, completed_at: NOW - 100)
-    assert_equal 0, order.wait_seconds(NOW)
+  test "cook_seconds is 0 before cooking has started" do
+    assert_equal 0, Order.new(status: :waiting, joined_at: NOW - 600).cook_seconds(NOW)
+    assert_equal 0, Order.new(status: :prepared, prepared_at: NOW + 60).cook_seconds(NOW), "not started yet"
+  end
+
+  test "cook_seconds counts up to now while a future completion is still scripted" do
+    # Replay: still cooking at NOW, but completed_at is a future scripted time.
+    order = Order.new(status: :prepared, prepared_at: NOW - 300, completed_at: NOW + 120)
+    assert_equal 300, order.cook_seconds(NOW), "counts to now, not the scripted completion"
   end
 
   # --- walk_away_risk -----------------------------------------------------
 
-  test "walk_away_risk is 0 unless waiting" do
-    assert_equal 0.0, Order.new(status: :prepared, joined_at: NOW - 600).walk_away_risk(NOW)
-    assert_equal 0.0, Order.new(status: :completed, joined_at: NOW - 600).walk_away_risk(NOW)
+  test "walk_away_risk is 0 unless actively cooking" do
+    assert_equal 0.0, Order.new(status: :waiting, joined_at: NOW - 600).walk_away_risk(NOW)
+    assert_equal 0.0, Order.new(status: :completed, prepared_at: NOW - 600, completed_at: NOW - 60).walk_away_risk(NOW)
   end
 
-  test "walk_away_risk is wait over the threshold window, rounded" do
-    # 270s / 540s = 0.5
-    assert_in_delta 0.5, waiting(270).walk_away_risk(NOW), 0.001
-    # at the threshold it reads exactly 1.0
-    assert_in_delta 1.0, waiting(THRESHOLD.to_i).walk_away_risk(NOW), 0.001
+  test "walk_away_risk is cook time over the threshold window, rounded" do
+    assert_in_delta 0.5, cooking(270).walk_away_risk(NOW), 0.001            # 270/540
+    assert_in_delta 1.0, cooking(THRESHOLD.to_i).walk_away_risk(NOW), 0.001 # at threshold
+  end
+
+  test "a shorter baseline raises the risk (cooks look slower)" do
+    order = cooking(300)
+    assert order.walk_away_risk(NOW, baseline: 120) > order.walk_away_risk(NOW)
   end
 
   # --- flagged? (the demo trigger) ---------------------------------------
 
   test "flagged? is false at or below the threshold" do
-    assert_not waiting(THRESHOLD.to_i - 1).flagged?(NOW)
-    assert_not waiting(THRESHOLD.to_i).flagged?(NOW), "boundary is strictly greater-than"
+    assert_not cooking(THRESHOLD.to_i - 1).flagged?(NOW)
+    assert_not cooking(THRESHOLD.to_i).flagged?(NOW), "boundary is strictly greater-than"
   end
 
   test "flagged? is true just past the threshold" do
-    assert waiting(THRESHOLD.to_i + 1).flagged?(NOW)
+    assert cooking(THRESHOLD.to_i + 1).flagged?(NOW)
   end
 
-  test "flagged? is false for non-waiting orders regardless of elapsed time" do
-    long_ago = NOW - 3600
-    assert_not Order.new(status: :prepared, joined_at: long_ago, prepared_at: NOW).flagged?(NOW)
-    assert_not Order.new(status: :completed, joined_at: long_ago, completed_at: NOW).flagged?(NOW)
+  test "flagged? is false for not-cooking orders regardless of elapsed time" do
+    assert_not Order.new(status: :waiting, joined_at: NOW - 3600).flagged?(NOW), "not cooking yet"
+    done = Order.new(status: :completed, prepared_at: NOW - 3600, completed_at: NOW - 1800)
+    assert_not done.flagged?(NOW), "already completed"
   end
 
-  test "a raised (learned) threshold un-flags a borderline order" do
-    order = waiting(600) # 10 min: past baseline 540s, under a 720s (×2.0) window
+  test "a raised (learned) threshold un-flags a borderline cook" do
+    order = cooking(600) # 10 min cooking: past baseline 540s, under a 720s (×2.0) window
     assert order.flagged?(NOW), "flagged at the baseline multiplier"
     assert_not order.flagged?(NOW, threshold: 2.0), "not flagged once the shop threshold is raised"
-    # risk also drops as the threshold widens
     assert order.walk_away_risk(NOW) > order.walk_away_risk(NOW, threshold: 2.0)
   end
 
   # --- suppressed? (override quiets similar advisories) -------------------
 
   test "suppressed? is true only for a recent same-kind override" do
-    order = Order.create!(status: :waiting, joined_at: NOW - 600, queue_number: "7")
+    order = Order.create!(status: :prepared, prepared_at: NOW - 600, queue_number: "7")
 
     assert_not order.suppressed?, "no advisories yet"
 
@@ -83,16 +92,16 @@ class OrderTest < ActiveSupport::TestCase
   end
 
   test "suppressed? ignores accepted advisories and other kinds" do
-    order = Order.create!(status: :waiting, joined_at: NOW - 600, queue_number: "8")
+    order = Order.create!(status: :prepared, prepared_at: NOW - 600, queue_number: "8")
     order.advisories.create!(kind: "walk_away_risk", status: :accepted, text: "ok")
     order.advisories.create!(kind: "open_server", status: :overridden, text: "other")
     assert_not order.suppressed?
   end
 
-  # --- wait_minutes -------------------------------------------------------
+  # --- cook_minutes -------------------------------------------------------
 
-  test "wait_minutes converts seconds to minutes rounded to 0.1" do
-    assert_in_delta 5.0, waiting(300).wait_minutes(NOW), 0.001
-    assert_in_delta 1.5, waiting(90).wait_minutes(NOW), 0.001
+  test "cook_minutes converts seconds to minutes rounded to 0.1" do
+    assert_in_delta 5.0, cooking(300).cook_minutes(NOW), 0.001
+    assert_in_delta 1.5, cooking(90).cook_minutes(NOW), 0.001
   end
 end

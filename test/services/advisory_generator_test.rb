@@ -14,8 +14,10 @@ class AdvisoryGeneratorTest < ActiveSupport::TestCase
     "suggested_action" => "page_customer"
   }.freeze
 
+  # An order that's been cooking 11 min (past the 9-min flag window).
   def flagged_order
-    Order.create!(status: :waiting, queue_number: "7", joined_at: NOW - 11 * 60)
+    Order.create!(status: :prepared, queue_number: "7",
+                  joined_at: NOW - 12 * 60, prepared_at: NOW - 11 * 60)
   end
 
   def stubbing(receiver, name, impl)

@@ -30,21 +30,20 @@ class AdvisoryGenerator
   def build_snapshot
     {
       shop: "Cafe demo",
-      baseline_time_to_prepared_min: Order::BASELINE_PREP_SECONDS / 60,
-      queue_depth: Order.open.count,
-      flagged_order: {
+      baseline_cook_min: Order::BASELINE_COOK_SECONDS / 60,
+      cooking_now: Order.live(@now).count,
+      slow_order: {
         queue_number: @order.queue_number,
-        waited_min: @order.wait_minutes(@now),
-        prepared: @order.prepared?
+        cooking_min: @order.cook_minutes(@now)
       }
     }
   end
 
   def prompt(snapshot)
     <<~PROMPT
-      You are TurnPilot, a live queue-ops copilot for a walk-in shop. A customer's order has
-      waited longer than this shop's normal. Give ONE short, actionable advisory for the staff.
-      Reply with a JSON object with keys:
+      You are TurnPilot, a live queue-ops copilot for a walk-in shop. An order has been
+      cooking longer than this shop's normal, so the waiting customer may walk away. Give ONE
+      short, actionable advisory for the staff. Reply with a JSON object with keys:
         advise (boolean), text (one sentence to staff), rationale (brief), suggested_action.
 
       Situation:

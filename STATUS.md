@@ -11,7 +11,7 @@
 ## v1 acceptance checklist
 - [x] Rails app boots (8.1.3 / Ruby 4.0.5); Postgres; UUID PKs; Tailwind (Palette 9)
 - [x] Replayer seeds the rush from `synthetic_rush.json` into Order records
-- [x] Situational model: per-order wait + walk-away risk vs baseline (`Order#flagged?`)
+- [x] Situational model: **cook-time overrun** walk-away risk vs baseline (`Order#flagged?`; prepared→now dwell)
 - [x] Local Gemma 4 advisory via `GemmaClient` (Ollama /api/chat, think:false, format:json)
 - [x] Advisory streams to console via Turbo; Accept/Override buttons render
 - [x] **Override suppresses similar advisories + feeds back a learned threshold** — `ShopThreshold` + suppression window (`Advisory::SUPPRESSION_WINDOW`)
@@ -27,6 +27,18 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### MODEL PIVOT (2026-07-04) — honest metric: cook-time overrun (step 1/2)
+Domain-expert (user) established MyTurnTag reality: **no join event**, `idled` = pre-created
+tag (no signal), `customer_read` unreliable, `Shop.mode` gates the lifecycle, and `prepared`
+= "cooking started" / `completed` = "cooking finished". So the only honest real-time signal
+(preparing_mode only) is a tag **cooking too long**: `Order` risk now = `prepared→now` dwell
+vs baseline cook time (was the fictional join→prepared wait). Rewrote Order math
+(`cook_seconds`/`cooking?`/`flagged?`/`walk_away_risk` with a `baseline:` arg), updated the
+Gemma snapshot/prompt, and regenerated the fixture (`gen_synthetic_rush.rb`) so 3 orders
+overrun at the anchor. Fixed a bug: cook_seconds must cap at `now` (scripted completed_at is
+future during replay). See memory `myturntag-data-model-reality`. 29 tests green.
+NEXT (step 2/2): per-shop baseline from avg(completed cook time); rewrite docs/DESIGN.md to the real model.
+
 ### Ticking replayer core (2026-07-04) — real-time replay step 1/2
 `Replayer.seed` now stores each order's full time-shifted timeline (incl. future joins);
 `Order#materialized_status`/`#materialize!` derive status from timestamps; `Replayer.advance(now)`
