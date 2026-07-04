@@ -27,6 +27,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Accept/Override feed back to the threshold (2026-07-04) — Override step 3/4
+`AdvisoriesController#accept` now calls `record_accept!` and `#override` calls
+`record_override!` on the order's `ShopThreshold` — closing the learning loop (reject →
+advise less; accept → drift back). +2 controller tests (integration; broadcast renders
+fine). Next (4/4): suppression window so an override quiets similar advisories for a period.
+
 ### Wire learned threshold into situational model (2026-07-04) — Override step 2/4
 `Order#flagged?`/`#walk_away_risk` now take a `threshold:` multiplier (defaults to the
 baseline constant, so existing behavior is unchanged). `Replayer.tick` resolves each

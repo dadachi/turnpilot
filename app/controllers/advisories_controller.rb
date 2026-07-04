@@ -3,12 +3,14 @@ class AdvisoriesController < ApplicationController
 
   def accept
     @advisory.accepted!
+    learned_threshold.record_accept!   # staff agreed → drift sensitivity back toward baseline
     broadcast
     head :ok
   end
 
   def override
     @advisory.overridden!
+    learned_threshold.record_override! # staff rejected → advise less on similar situations
     broadcast
     head :ok
   end
@@ -17,6 +19,10 @@ class AdvisoriesController < ApplicationController
 
   def set_advisory
     @advisory = Advisory.find(params[:id])
+  end
+
+  def learned_threshold
+    ShopThreshold.for(@advisory.order.shop_id)
   end
 
   def broadcast
