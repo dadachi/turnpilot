@@ -123,6 +123,24 @@ class OrderTest < ActiveSupport::TestCase
     assert_equal Order::BASELINE_COOK_SECONDS, Order.baseline_cook_seconds(SHOP)
   end
 
+  # --- shop-level throughput signals (open-a-server) ---------------------
+
+  test "cooking_count counts only actively-cooking orders for the shop" do
+    Order.create!(status: :prepared, shop_id: SHOP, prepared_at: NOW - 120)                    # cooking
+    Order.create!(status: :prepared, shop_id: SHOP, prepared_at: NOW - 60)                      # cooking
+    Order.create!(status: :completed, shop_id: SHOP, prepared_at: NOW - 300, completed_at: NOW - 60) # done
+    Order.create!(status: :waiting, shop_id: SHOP, joined_at: NOW - 60)                         # not cooking
+    Order.create!(status: :prepared, shop_id: "other", prepared_at: NOW - 60)                   # other shop
+    assert_equal 2, Order.cooking_count(SHOP, NOW)
+  end
+
+  test "completions_in counts completions within the window for the shop" do
+    Order.create!(status: :completed, shop_id: SHOP, prepared_at: NOW - 600, completed_at: NOW - 120) # in window
+    Order.create!(status: :completed, shop_id: SHOP, prepared_at: NOW - 600, completed_at: NOW - 540) # too old
+    Order.create!(status: :completed, shop_id: "other", prepared_at: NOW - 600, completed_at: NOW - 60) # other shop
+    assert_equal 1, Order.completions_in(SHOP, 5.minutes, NOW)
+  end
+
   # --- cook_minutes -------------------------------------------------------
 
   test "cook_minutes converts seconds to minutes rounded to 0.1" do
