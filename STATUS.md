@@ -40,6 +40,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Reproducibility integration test (2026-07-04) — hardens the demo path
+`replayer_tick_test`: seed → `Replayer.tick` fires both advisory kinds (≥1 walk-away + 1
+open-server); a second immediate tick adds nothing (pending + window suppression); same
+seed+now flags the same orders (deterministic). Gemma + broadcasts stubbed → offline.
+Satisfies DESIGN's "deterministic replay reproduces the same advisory". +3 tests → 52 green.
+
 ### Visible learning (2026-07-04) — surface learned threshold/baseline in console
 Status strip now shows "normal cook ~Xm · alerts after ~Ym" for the demo shop, where Y =
 baseline × the learned `ShopThreshold` multiplier. Each Override raises Y (broadcast on the
