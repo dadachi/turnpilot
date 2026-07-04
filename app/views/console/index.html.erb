@@ -12,6 +12,7 @@
   </header>
 
   <%= render "status" %>
+  <%= render "queue" %>
 
   <div id="advisories" class="space-y-3">
     <%= render Advisory.recent.limit(20) %>

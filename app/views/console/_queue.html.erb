@@ -1,0 +1,8 @@
+<div id="queue" class="mb-4 flex flex-wrap gap-2">
+  <% Order.live.select(&:cooking?).sort_by { |o| -o.cook_seconds }.each do |o| %>
+    <span class="rounded-lg px-2.5 py-1 text-xs font-semibold tabular-nums
+                 <%= o.flagged? ? "bg-advisory-100 text-advisory-500" : "bg-brand-50 text-muted" %>">
+      #<%= o.queue_number %> · <%= o.cook_minutes %>m
+    </span>
+  <% end %>
+</div>
