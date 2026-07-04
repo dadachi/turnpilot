@@ -7,8 +7,19 @@
     <h1 class="text-xl font-bold text-ink">
       TurnPilot <span class="text-brand-500">·</span> Cafe demo
     </h1>
-    <%= button_to "Run rush", console_demo_path, method: :post,
-          class: "rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500" %>
+    <div class="flex items-center gap-3"
+         data-controller="camera" data-camera-url-value="<%= vision_observations_path %>">
+      <span data-camera-target="indicator" style="display:none"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-advisory-500">
+        <span class="h-2 w-2 rounded-full bg-advisory-500 animate-pulse"></span> camera on
+      </span>
+      <button type="button" data-camera-target="button" data-action="camera#toggle"
+              class="rounded-lg border border-muted px-3 py-2 text-sm font-semibold text-muted hover:bg-surface">
+        Enable camera
+      </button>
+      <%= button_to "Run rush", console_demo_path, method: :post,
+            class: "rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500" %>
+    </div>
   </header>
 
   <%= render "status" %>

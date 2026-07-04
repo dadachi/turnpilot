@@ -43,6 +43,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Vision capstone P2 (2026-07-05) — browser capture + opt-in camera toggle (epic branch)
+`camera_controller` (Stimulus): opt-in toggle → `getUserMedia` → canvas downscale ~512px →
+JPEG → POST `/vision/observations` every ~5s, chained; pulsing "camera on" indicator.
+`VisionObservationsController#create` → `VisionClient.observe` → persists coarse obs, prunes,
+discards frame. Frame never stored/logged (`:frame` filtered; no blob column). +3 tests → 72.
+Verified full round-trip live: browser canvas frame → CSRF fetch → real Gemma → observation
+(count 0→1). **`getUserMedia` (camera permission) needs a manual browser smoke-test.**
+
 ### Vision capstone P1 (2026-07-05) — VisionClient + fixed-image path (epic/camera-vision)
 `VisionClient.observe(path|base64)` — local Gemma 4 vision via Ollama `/api/chat`
 (think:false, format:json, `images:[b64]`), coarse contract only (`people_present`,
