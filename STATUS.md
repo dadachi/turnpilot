@@ -24,7 +24,20 @@
 open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from stats.
 
 ## Blockers / questions for the human (read first)
-- _(none)_
+- **Morning smoke-test (browser + Ollama):** the live ticking demo, queue strip, and
+  advisory chime are test-covered server-side but **not visually verified**. Run `bin/dev`,
+  open `/`, click "Run rush", confirm advisories stream in with a chime and the queue strip
+  updates. (5-min check.)
+- **Breadth-item honesty (before building them):** under the real model, some planned
+  breadth items need signals MyTurnTag doesn't record —
+  - `open-a-server` (throughput drop → open a prep station): ✅ honest (uses `completed_at`
+    rate + cooking count).
+  - `ETA-to-customer`: only honest as **remaining cook time** for an in-progress order
+    (baseline − elapsed); a pre-cook ETA is impossible (no join).
+  - `no-show re-notify`: ⚠️ **not feasible** — `completed` = cooking finished, and pickup is
+    NOT tracked, so there's no signal that a ready order went uncollected. Needs a product
+    decision (add a pickup/handover event?) before it can be built honestly.
+  - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
 ### Advisory chime (2026-07-04) — completes the last v1 checklist item ✅
