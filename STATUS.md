@@ -27,6 +27,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Model pivot 2/2 (2026-07-04) — data-driven baseline + DESIGN corrected
+`Order.baseline_cook_seconds(shop_id)` = avg(`completed_at − prepared_at`) over recent
+completed tags, fallback to the constant under `min_samples`. Wired into `Replayer.tick`
+(memoized per shop) and the Gemma snapshot, so "vs this shop's normal" is real data (demo
+baseline ≈ 5.3 min, still flags the 3 slow cooks). Rewrote `docs/DESIGN.md` event-stream +
+situational-model sections to the real MyTurnTag (modes, states, `prepared`=cook-start, no
+join, honest baseline). +3 tests → 32 green. **Model pivot complete.**
+
 ### MODEL PIVOT (2026-07-04) — honest metric: cook-time overrun (step 1/2)
 Domain-expert (user) established MyTurnTag reality: **no join event**, `idled` = pre-created
 tag (no signal), `customer_read` unreliable, `Shop.mode` gates the lifecycle, and `prepared`

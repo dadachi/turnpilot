@@ -49,6 +49,20 @@ class Order < ApplicationRecord
 
   def cook_minutes(now = Time.current) = (cook_seconds(now) / 60.0).round(1)
 
+  # This shop's *normal* cook time, learned from history: the average prepared→completed
+  # duration over recent completed orders. Falls back to the constant until there's enough
+  # signal. This is what "vs this shop's normal" honestly means (both timestamps are
+  # staff-recorded), replacing a hardcoded baseline.
+  def self.baseline_cook_seconds(shop_id, sample: 20, min_samples: 3)
+    durations = completed.where(shop_id: shop_id).where.not(prepared_at: nil)
+                         .order(completed_at: :desc).limit(sample)
+                         .pluck(:prepared_at, :completed_at)
+                         .filter_map { |prep, done| (done - prep).to_i if done && prep && done > prep }
+    return BASELINE_COOK_SECONDS if durations.size < min_samples
+
+    (durations.sum.to_f / durations.size).round
+  end
+
   # True when a same-kind advisory was overridden within the suppression window — staff
   # just rejected this; don't re-advise until it lapses.
   def suppressed?(kind: "walk_away_risk", window: Advisory::SUPPRESSION_WINDOW)

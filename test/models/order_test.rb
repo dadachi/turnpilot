@@ -98,6 +98,31 @@ class OrderTest < ActiveSupport::TestCase
     assert_not order.suppressed?
   end
 
+  # --- baseline_cook_seconds (per-shop, learned from history) -------------
+
+  SHOP = "8f4c2b10-0000-4000-8000-000000000001".freeze
+
+  test "baseline_cook_seconds falls back to the constant without enough samples" do
+    Order.create!(status: :completed, shop_id: SHOP, prepared_at: NOW - 600, completed_at: NOW - 300)
+    assert_equal Order::BASELINE_COOK_SECONDS, Order.baseline_cook_seconds(SHOP), "1 sample < min"
+  end
+
+  test "baseline_cook_seconds averages recent completed cook durations for the shop" do
+    [ 300, 360, 420 ].each_with_index do |dur, i|
+      Order.create!(status: :completed, shop_id: SHOP, queue_number: i.to_s,
+                    prepared_at: NOW - dur, completed_at: NOW) # cook duration = dur
+    end
+    assert_equal 360, Order.baseline_cook_seconds(SHOP) # (300+360+420)/3
+  end
+
+  test "baseline_cook_seconds ignores other shops" do
+    3.times do |i|
+      Order.create!(status: :completed, shop_id: "other", queue_number: i.to_s,
+                    prepared_at: NOW - 120, completed_at: NOW)
+    end
+    assert_equal Order::BASELINE_COOK_SECONDS, Order.baseline_cook_seconds(SHOP)
+  end
+
   # --- cook_minutes -------------------------------------------------------
 
   test "cook_minutes converts seconds to minutes rounded to 0.1" do

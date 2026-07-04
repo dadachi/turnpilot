@@ -4,44 +4,53 @@ Working spec for the hackathon build. This is a **planning doc**; the submission
 all code start at kickoff (Sat 7:00 PM JST). TurnPilot is **new work that integrates with**
 MyTurnTag — it does **not** reuse MyTurnTag's code.
 
-## Event stream (derived from MyTurnTag's data model, not its code)
+## Event stream (derived from MyTurnTag's REAL data model, not its code)
 
-MyTurnTag is an **order-ready queue**. Each number tag (`item_tags`) moves through a
-lifecycle logged in `item_tag_histories`. TurnPilot consumes a normalized event per
-transition through a **thin adapter interface** — the source behind it is swappable, so
-**MyTurnTag itself needs no modification**:
+MyTurnTag is an **order-ready queue**. Each number tag (`item_tags`) moves through a state
+lifecycle logged in `item_tag_histories`. **The lifecycle depends on `Shop.mode`:**
+
+- `preparing_mode`: `idled → prepared → completed`
+- `normal_mode`:    `idled → completed` (no `prepared` step)
+
+What the states actually mean — this is the crux, and earlier drafts of this spec got it wrong:
+
+| state | set by | meaning | reliable? |
+|---|---|---|---|
+| `idled` | system | tag exists — but tags are **pre-created regardless of any customer** | ❌ no signal (may be empty stock on the rack) |
+| `prepared` | staff | **cooking/preparation has STARTED** | ✅ staff action |
+| `completed` | staff | **cooking finished** (order ready) | ✅ staff action |
+| `customer_read` | customer | customer opened the "ready" notice | ⚠️ customer-controlled — a weak *positive* only, never a negative |
+
+**There is no "joined" event.** Pulling an NFC tag is not recorded, and `idled` is
+pre-provisioned, so *nothing marks a customer entering the queue*. The only trustworthy
+timestamps are the two staff transitions: `prepared_at` (cook start) and `completed_at`
+(cook done). We therefore never model a pre-cook wait.
+
+TurnPilot consumes these transitions as a normalized stream through a **thin adapter** —
+swappable, so **MyTurnTag itself needs no modification**:
 
 - **Replayer** → the demo (v1). MyTurnTag untouched (also required by the rules).
-- **Poll / tail** → production, *zero-touch*: `item_tag_histories` is append-only, so
-  TurnPilot can poll MyTurnTag's read API or tail that table read-only.
-- **Webhook** → production, real-time: the *only* option that adds code to MyTurnTag —
-  an optional future upgrade, not required.
+- **Poll / tail** → production, *zero-touch*: `item_tag_histories` is append-only.
+- **Webhook** → production, real-time: the only option that adds code to MyTurnTag; optional.
 
-Normalized event:
-
-```
-{ shop_id, queue_number, event, at, actor }        # actor: customer | staff
-event ∈ { joined, prepared, customer_read, completed }
-```
-
-| event | MyTurnTag source field | meaning |
-|---|---|---|
-| `joined` | `item_tags.created_at` (+ `queue_number`) | customer pulls a tag, enters the queue |
-| `prepared` | `prepared_at` / `prepared_by_id` | staff marks the order ready |
-| `customer_read` | `customer_read_at` | customer viewed the "ready" notice |
-| `completed` | `completed_at` / `completed_by_id` | order handed over / done |
-
-**Baseline** comes from `stats_averages` (per shop, per `day_of_week`: `scanned_num`,
-`prepared_num`, `completed_num`) → derive this shop's typical time-to-prepared and
-throughput. This is what "vs THIS shop's normal" means.
+**Baseline = this shop's normal cook time**, learned honestly as the average
+`completed_at − prepared_at` over recent completed tags (`Order.baseline_cook_seconds`),
+falling back to a constant until there's enough signal. That is what "vs THIS shop's normal"
+means — derived from recorded staff timestamps, not assumed.
 
 ## Situational model (recomputed on each event)
 
-- `open_orders` = joined and not completed
-- per order: `wait_to_prepared` (joined→now if not prepared), `wait_to_pickup`
-  (prepared→now if prepared and not read/completed)
-- `throughput` = completions in a rolling window
-- `walk_away_risk(order)` = f(wait vs baseline time-to-prepared; prepared-but-unread age)
+The only honest real-time signal is the **cooking window**, so the model keys off it
+(`preparing_mode` shops):
+
+- `cooking` = tags `prepared` but not yet `completed`
+- per order: `cook_seconds` = `prepared → now` (frozen at `completed`)
+- `throughput` = completions in a rolling window (from `completed_at`)
+- `walk_away_risk(order)` = `cook_seconds` ÷ (baseline cook time × learned per-shop
+  threshold). A tag cooking past this shop's normal → the waiting customer may walk away.
+
+`normal_mode` shops have no `prepared` state and thus no live at-risk signal, so TurnPilot's
+real-time advisory is inherently a **`preparing_mode`** feature.
 
 ## The agent (reasons on local Gemma — Google Remote track requirement)
 
@@ -51,10 +60,11 @@ The override adjusts a per-shop learned threshold (stop advising what staff reje
 
 ## v1 — the ONE end-to-end path that MUST work by wake-up (7:00 AM JST)
 
-**Walk-away-risk advisory.** Replayer streams events → an order's `wait_to_prepared`
-exceeds the baseline/learned threshold → agent (via local Gemma) emits a plain-language
-advisory with rationale → streamed to the operator UI (Turbo Streams) with **[Accept] /
-[Override]** → Override suppresses similar advisories for a window and is logged and fed back.
+**Walk-away-risk advisory.** Replayer streams events → an order's cook time
+(`prepared → now`) exceeds this shop's baseline cook time × its learned threshold → agent
+(via local Gemma) emits a plain-language advisory with rationale → streamed to the operator
+UI (Turbo Streams) with **[Accept] / [Override]** → Override suppresses similar advisories
+for a window and is logged and fed back into the threshold.
 
 **Acceptance criteria**
 - Deterministic replay reproduces the same advisory (fixed seed / fixed stream).
