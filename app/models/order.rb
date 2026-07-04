@@ -49,6 +49,20 @@ class Order < ApplicationRecord
 
   def cook_minutes(now = Time.current) = (cook_seconds(now) / 60.0).round(1)
 
+  # Honest ETA = seconds remaining until this order reaches the shop's normal cook time.
+  # 0 once it's overdue (already past normal); nil when not cooking. There is no pre-cook
+  # ETA in the real model (no join), so ETA only exists for in-progress orders.
+  def eta_seconds(now = Time.current, baseline: BASELINE_COOK_SECONDS)
+    return nil unless cooking?(now)
+
+    [ baseline - cook_seconds(now), 0 ].max
+  end
+
+  def eta_minutes(now = Time.current, baseline: BASELINE_COOK_SECONDS)
+    secs = eta_seconds(now, baseline: baseline)
+    secs && (secs / 60.0).round(1)
+  end
+
   # This shop's *normal* cook time, learned from history: the average prepared→completed
   # duration over recent completed orders. Falls back to the constant until there's enough
   # signal. This is what "vs this shop's normal" honestly means (both timestamps are
