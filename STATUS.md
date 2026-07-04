@@ -43,6 +43,15 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Vision capstone P3 (2026-07-05) — perception folds into advisories ✅ demoable
+Camera perception now produces visible advisories. `Replayer.walk_away` escalates a
+BORDERLINE cook (≥0.8 risk, not yet flagged) when a fresh observation shows `people_present`
+— filling the "is anyone actually waiting?" gap; `AdvisoryGenerator` snapshot/prompt gains
+`customer_waiting`. New `QueueBuildingAdvisor` (order-less, like OpenServer): `busy` camera +
+nothing cooking → "start taking orders" nudge, own suppression + advise-veto. Stale/absent
+obs → fully inert. +10 tests → 82 green. Verified live: escalated walk-away + queue-building
+both fired from real Gemma. **First demoable vision milestone — epic is now merge-worthy.**
+
 ### Vision capstone P2 (2026-07-05) — browser capture + opt-in camera toggle (epic branch)
 `camera_controller` (Stimulus): opt-in toggle → `getUserMedia` → canvas downscale ~512px →
 JPEG → POST `/vision/observations` every ~5s, chained; pulsing "camera on" indicator.

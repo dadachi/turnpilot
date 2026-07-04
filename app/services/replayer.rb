@@ -60,23 +60,48 @@ class Replayer
 
     begin
       advance(now)
-      walk_away(now, limit) + open_server(now)
+      walk_away(now, limit) + open_server(now) + queue_building(now)
     ensure
       conn.execute("SELECT pg_advisory_unlock(#{TICK_LOCK_KEY})")
     end
   end
 
+  ESCALATION_RISK = 0.8 # a borderline cook advises early when the camera sees a waiting customer
+
   # Per-order walk-away-risk advisories for the most-at-risk flagged orders. Flagging uses
-  # each shop's LEARNED threshold and baseline (memoized per shop).
+  # each shop's LEARNED threshold and baseline (memoized per shop). Camera perception lets a
+  # BORDERLINE cook (>= ESCALATION_RISK, not yet flagged) advise when a customer is visibly
+  # waiting — filling the "is anyone actually waiting?" gap MyTurnTag's data can't answer.
   def self.walk_away(now, limit)
     threshold = Hash.new { |h, sid| h[sid] = ShopThreshold.for(sid).risk_multiplier }
-    baseline = Hash.new { |h, sid| h[sid] = Order.baseline_cook_seconds(sid) }
+    baseline  = Hash.new { |h, sid| h[sid] = Order.baseline_cook_seconds(sid) }
+    waiting   = Hash.new { |h, sid| h[sid] = customer_waiting?(sid, now) }
+
     Order.live(now)
-         .select { |o| o.flagged?(now, threshold: threshold[o.shop_id], baseline: baseline[o.shop_id]) }
+         .select do |o|
+           t = threshold[o.shop_id]
+           b = baseline[o.shop_id]
+           o.flagged?(now, threshold: t, baseline: b) ||
+             (waiting[o.shop_id] && o.walk_away_risk(now, threshold: t, baseline: b) >= ESCALATION_RISK)
+         end
          .sort_by { |o| -o.walk_away_risk(now, threshold: threshold[o.shop_id], baseline: baseline[o.shop_id]) }
          .reject { |o| o.advisories.pending.exists? || o.suppressed? }
          .first(limit)
-         .filter_map { |o| AdvisoryGenerator.for(o, now: now) }
+         .filter_map { |o| AdvisoryGenerator.for(o, now: now, customer_waiting: waiting[o.shop_id]) }
+  end
+
+  # Shop-level "customers are lining up but nothing has been started" nudge — per shop with a
+  # fresh camera observation.
+  def self.queue_building(now)
+    VisionObservation.where(observed_at: (now - VisionObservation::FRESH_WINDOW)..now)
+                     .distinct.pluck(:shop_id).compact
+                     .filter_map { |sid| QueueBuildingAdvisor.for(sid, now: now) }
+  end
+
+  # Fresh "a customer is visibly waiting" signal for a shop (false when camera off/stale/empty).
+  def self.customer_waiting?(shop_id, now)
+    obs = VisionObservation.latest_for(shop_id, now)
+    obs.present? && obs.fresh?(now) && obs.people_present
   end
 
   # One shop-level open-a-server advisory per shop that's falling behind.
