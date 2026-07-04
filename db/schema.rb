@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_04_103123) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_04_113000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -37,6 +37,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_04_103123) do
     t.uuid "shop_id"
     t.integer "status"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "shop_thresholds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "accept_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.integer "override_count", default: 0, null: false
+    t.float "risk_multiplier", default: 1.5, null: false
+    t.uuid "shop_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shop_id"], name: "index_shop_thresholds_on_shop_id", unique: true
   end
 
   add_foreign_key "advisories", "orders"
