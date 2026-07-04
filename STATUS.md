@@ -40,6 +40,13 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Visible learning (2026-07-04) — surface learned threshold/baseline in console
+Status strip now shows "normal cook ~Xm · alerts after ~Ym" for the demo shop, where Y =
+baseline × the learned `ShopThreshold` multiplier. Each Override raises Y (broadcast on the
+next tick), so staff SEE the copilot adapt — closes the demo-script "agent adapts" beat.
+Added read-only `ShopThreshold.multiplier_for` (no row creation, view-safe). +1 test → 49
+green. UI — **needs morning smoke-test**.
+
 ### ETA-to-customer (2026-07-04) — breadth #2 (honest = remaining cook time)
 `Order#eta_seconds`/`#eta_minutes` = time left to the shop's normal cook time (0 when
 overdue, nil when not cooking) — the only honest ETA (no pre-cook ETA without a join). Queue

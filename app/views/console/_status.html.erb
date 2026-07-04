@@ -1,5 +1,11 @@
 <div id="status" class="mb-4 text-sm text-muted">
   <%= Order.live.count %> cooking ·
   <span class="font-semibold text-advisory-500"><%= Order.live.select(&:flagged?).count %> at risk</span>
+  <% if (sid = Order.live.pick(:shop_id)) %>
+    <% base = Order.baseline_cook_seconds(sid) %>
+    · normal cook ~<%= (base / 60.0).round(1) %>m
+    · <span title="Rises each time staff Override — the copilot learns to advise less">alerts after
+      ~<%= (base * ShopThreshold.multiplier_for(sid) / 60.0).round(1) %>m</span>
+  <% end %>
   · reasoning on Gemma 4, on-device
 </div>

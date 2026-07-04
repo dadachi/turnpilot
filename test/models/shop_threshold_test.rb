@@ -12,6 +12,14 @@ class ShopThresholdTest < ActiveSupport::TestCase
     end
   end
 
+  test "multiplier_for returns BASELINE without creating a row" do
+    assert_no_difference -> { ShopThreshold.count } do
+      assert_equal ShopThreshold::BASELINE, ShopThreshold.multiplier_for(SHOP)
+    end
+    ShopThreshold.for(SHOP).update!(risk_multiplier: 2.3)
+    assert_equal 2.3, ShopThreshold.multiplier_for(SHOP)
+  end
+
   test "record_override! raises sensitivity threshold and counts it" do
     t = ShopThreshold.for(SHOP)
     returned = t.record_override!
