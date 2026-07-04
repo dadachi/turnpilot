@@ -15,6 +15,7 @@ class AdvisoryGenerator
     advisory = @order.advisories.create!(
       kind: "walk_away_risk",
       status: :pending,
+      shop_id: @order.shop_id,
       text: result["text"].to_s,
       rationale: result["rationale"].to_s,
       suggested_action: result["suggested_action"].to_s

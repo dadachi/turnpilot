@@ -40,6 +40,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Shop-scoped advisories (2026-07-04) — breadth prep for open-a-server
+Advisories can now be shop-level: added `advisories.shop_id`, made `order_id` nullable,
+`belongs_to :order, optional: true`. `AdvisoryGenerator` stamps `shop_id`; the card shows
+"kitchen" when there's no order. Unblocks the `open_server` advisory (a shop-level, not
+per-order, signal). +2 tests → 38 green. Next: `OpenServerAdvisor` (throughput/backlog → Gemma).
+
 ### Advisory chime (2026-07-04) — completes the last v1 checklist item ✅
 `chime_controller` (Stimulus) on #advisories: a MutationObserver plays a short synthesized
 WebAudio beep (rising 880→1320 Hz, no asset, offline) when a new advisory is prepended.
