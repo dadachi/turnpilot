@@ -43,4 +43,10 @@ class ReplayerTest < ActiveSupport::TestCase
     assert_operator Order.count, :>=, live, "future joins are stored but hidden"
     assert Order.live(NOW).any? { |o| o.flagged?(NOW) }, "anchor leaves at least one order past threshold"
   end
+
+  test "seed resets each shop's learned threshold to baseline" do
+    ShopThreshold.for(SHOP).update!(risk_multiplier: 3.0)
+    Replayer.seed(now: NOW)
+    assert_equal ShopThreshold::BASELINE, ShopThreshold.multiplier_for(SHOP), "fresh demo starts at baseline"
+  end
 end
