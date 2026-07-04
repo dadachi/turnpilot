@@ -4,3 +4,4 @@
 [2026-07-04T10:41:51.673Z] [error] WebSocket connection to 'ws://127.0.0.1:3000/cable' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED
 [2026-07-04T10:42:01.219Z] [error] WebSocket connection to 'ws://127.0.0.1:3000/cable' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED
 [2026-07-04T10:42:12.020Z] [error] WebSocket connection to 'ws://127.0.0.1:3000/cable' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED
+[2026-07-04T10:47:33.349Z] [error] WebSocket connection to 'ws://127.0.0.1:3000/cable' failed: 
