@@ -5,7 +5,7 @@ class Order < ApplicationRecord
 
   # v1: a per-shop baseline constant (later: from MyTurnTag stats_averages).
   BASELINE_PREP_SECONDS = 6 * 60
-  RISK_THRESHOLD = 1.5   # flag when wait exceeds baseline * threshold
+  RISK_THRESHOLD = 1.5   # default multiplier; a shop's learned value (ShopThreshold) overrides
 
   scope :open, -> { where.not(status: :completed) }
 
@@ -15,14 +15,15 @@ class Order < ApplicationRecord
     ((prepared_at || now) - joined_at).to_i
   end
 
-  # 0.0..; >= 1.0 means past the flag threshold.
-  def walk_away_risk(now = Time.current)
+  # 0.0..; >= 1.0 means past the flag threshold. `threshold` is the shop's learned
+  # sensitivity multiplier (defaults to the baseline constant).
+  def walk_away_risk(now = Time.current, threshold: RISK_THRESHOLD)
     return 0.0 unless waiting?
-    (wait_seconds(now).to_f / (BASELINE_PREP_SECONDS * RISK_THRESHOLD)).round(2)
+    (wait_seconds(now).to_f / (BASELINE_PREP_SECONDS * threshold)).round(2)
   end
 
-  def flagged?(now = Time.current)
-    waiting? && wait_seconds(now) > BASELINE_PREP_SECONDS * RISK_THRESHOLD
+  def flagged?(now = Time.current, threshold: RISK_THRESHOLD)
+    waiting? && wait_seconds(now) > BASELINE_PREP_SECONDS * threshold
   end
 
   def wait_minutes(now = Time.current) = (wait_seconds(now) / 60.0).round(1)
