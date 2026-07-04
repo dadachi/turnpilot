@@ -1,2 +1,0 @@
-{"ts":"2026-07-04T10:38:49.686Z","cmd":"goto","args":"http://127.0.0.1:3000/","origin":"http://127.0.0.1:3000/","durationMs":56,"status":"ok","hasCookies":false,"mode":"launched"}
-{"ts":"2026-07-04T10:38:50.891Z","cmd":"screenshot","args":"/tmp/turnpilot_console.png","origin":"http://127.0.0.1:3000/","durationMs":139,"status":"ok","hasCookies":false,"mode":"launched"}
