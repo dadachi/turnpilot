@@ -8,6 +8,11 @@ class Order < ApplicationRecord
   RISK_THRESHOLD = 1.5   # default multiplier; a shop's learned value (ShopThreshold) overrides
 
   scope :open, -> { where.not(status: :completed) }
+  scope :joined_by, ->(t = Time.current) { where(joined_at: ..t) }
+  scope :not_completed_by, ->(t = Time.current) { where("completed_at IS NULL OR completed_at > ?", t) }
+  # Timeline-driven "currently in the queue" as of t: joined and not yet completed.
+  # Derives from timestamps (not stored status), so it's correct even before `advance`.
+  scope :live, ->(t = Time.current) { joined_by(t).not_completed_by(t) }
 
   # How long this order has been waiting for prep (frozen once prepared).
   def wait_seconds(now = Time.current)
@@ -32,5 +37,22 @@ class Order < ApplicationRecord
   # just rejected this; don't re-advise until it lapses.
   def suppressed?(kind: "walk_away_risk", window: Advisory::SUPPRESSION_WINDOW)
     advisories.overridden.where(kind: kind).where(created_at: window.ago..).exists?
+  end
+
+  # The status implied by this order's event timeline at time `now`. The stored
+  # timestamps are the replay "script"; the Replayer materializes status from them as
+  # the clock advances. (A not-yet-joined order reads :waiting but is hidden by `live`.)
+  def materialized_status(now = Time.current)
+    return :completed if completed_at && completed_at <= now
+    return :prepared if prepared_at && prepared_at <= now
+
+    :waiting
+  end
+
+  # Advance this order's stored status to match its timeline at `now`.
+  def materialize!(now = Time.current)
+    want = materialized_status(now)
+    update!(status: want) unless status == want.to_s
+    self
   end
 end
