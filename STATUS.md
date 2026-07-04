@@ -43,6 +43,15 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Vision capstone P1 (2026-07-05) — VisionClient + fixed-image path (epic/camera-vision)
+`VisionClient.observe(path|base64)` — local Gemma 4 vision via Ollama `/api/chat`
+(think:false, format:json, `images:[b64]`), coarse contract only (`people_present`,
+`queue_level none|light|busy`, `note` — NO counting), safe-default normalize, error → nil
+(inert). `VisionObservation` model + migration (uuid, loose shop_id, **no blob column**,
+`latest_for`/`fresh?`/`prune!`). Staged fixtures + `rake vision:observe` dev proof.
+Verified live: person→present/light, empty→none. +12 tests → 69 green. See #36 / spec.
+
+
 ### Run rush resets learned threshold (2026-07-05)
 `Replayer.seed` now also `ShopThreshold.delete_all`, so each demo starts fresh at baseline
 sensitivity (×1.5, "alerts after ~7.9m") instead of carrying a raised threshold from a prior
