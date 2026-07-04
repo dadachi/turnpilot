@@ -14,9 +14,11 @@ class AdvisoryGeneratorTest < ActiveSupport::TestCase
     "suggested_action" => "page_customer"
   }.freeze
 
+  SHOP = "8f4c2b10-0000-4000-8000-000000000001".freeze
+
   # An order that's been cooking 11 min (past the 9-min flag window).
   def flagged_order
-    Order.create!(status: :prepared, queue_number: "7",
+    Order.create!(status: :prepared, queue_number: "7", shop_id: SHOP,
                   joined_at: NOW - 12 * 60, prepared_at: NOW - 11 * 60)
   end
 
@@ -47,6 +49,7 @@ class AdvisoryGeneratorTest < ActiveSupport::TestCase
     end
     assert_equal "walk_away_risk", advisory.kind
     assert advisory.pending?
+    assert_equal SHOP, advisory.shop_id, "advisory is stamped with the order's shop"
     assert_equal ADVICE["text"], advisory.text
     assert_equal ADVICE["rationale"], advisory.rationale
     assert_equal ADVICE["suggested_action"], advisory.suggested_action
