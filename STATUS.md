@@ -4,9 +4,13 @@
 > human can triage in ~5 minutes at wake-up. Newest cycle on top.
 
 ## At-a-glance
-- **Build health:** tests ✅ 13 runs / 29 assertions (Order math + advisory trigger) · main ✅ green · local Gemma 4 ✅ reachable
-- **v1 walk-away-risk path:** ✅ working end-to-end (seed → flag → Gemma advisory → Turbo console → Accept/Override)
-- **Demo replayable from `synthetic_rush.json`:** ✅ yes (`Replayer.seed` + `Replayer.tick`; visit `/` and "Run rush")
+- **Build health:** tests ✅ 55 runs / 140 assertions · main ✅ green · local Gemma 4 (needs Ollama up)
+- **v1 walk-away-risk path:** ✅ end-to-end (seed → cook-overrun flag → Gemma advisory → Turbo console → Accept/Override → learns)
+- **Advisory types:** walk-away-risk (per-order cook overrun) + open-a-server (shop throughput). ETA countdown in the queue strip.
+- **Demo replayable from `synthetic_rush.json`:** ✅ (`Replayer.seed` + ticking `Replayer.tick`; visit `/`, click "Run rush")
+- **⚠️ Morning smoke-test (5 min):** the live/queue/chime/learning UI is test-covered server-side but NOT visually
+  verified — run `bin/dev` + Ollama, click "Run rush", confirm advisories stream in with a chime, queue strip counts
+  down, and "alerts after ~Ym" rises when you Override. (Details in Blockers below.)
 
 ## v1 acceptance checklist
 - [x] Rails app boots (8.1.3 / Ruby 4.0.5); Postgres; UUID PKs; Tailwind (Palette 9)
@@ -40,6 +44,13 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### GemmaClient parse coverage + overnight wrap-up (2026-07-05)
+Extracted `GemmaClient.parse_content` (JSON-object extraction from message content, incl.
+prose/fence wrapping) and covered it (+3 tests → 55 green) — the last untested load-bearing
+piece. **Honest, testable backlog now exhausted:** v1 done, breadth done (open-server, ETA,
+baseline, visible learning), reproducibility covered; only no-show stays blocked (needs a
+pickup event) and UI wants a human smoke-test. Loop stopping here — see At-a-glance smoke-test.
+
 ### Reproducibility integration test (2026-07-04) — hardens the demo path
 `replayer_tick_test`: seed → `Replayer.tick` fires both advisory kinds (≥1 walk-away + 1
 open-server); a second immediate tick adds nothing (pending + window suppression); same
