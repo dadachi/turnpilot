@@ -27,6 +27,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Ticking replayer core (2026-07-04) — real-time replay step 1/2
+`Replayer.seed` now stores each order's full time-shifted timeline (incl. future joins);
+`Order#materialized_status`/`#materialize!` derive status from timestamps; `Replayer.advance(now)`
+re-materializes all orders as the clock moves; timeline-aware `Order.live(t)` scope
+(joined & not completed by t). `tick` advances first. Fixed 2 latent bugs: demo reset hit
+an advisories FK (now clears advisories first) and waiting orders weren't persisted. +4 tests.
+Next (2/2): a driver (Stimulus poll → tick endpoint + Turbo broadcast) so it plays out live.
+
 ### Override suppression window (2026-07-04) — Override step 4/4 ✅ feature complete
 `Advisory::SUPPRESSION_WINDOW` (5 min); `Order#suppressed?` is true for a recent same-kind
 **override** only (ignores accepts + other kinds). `AdvisoryGenerator` early-returns nil

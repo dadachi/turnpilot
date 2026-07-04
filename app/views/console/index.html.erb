@@ -9,8 +9,8 @@
   </header>
 
   <p class="mb-4 text-sm text-muted">
-    <%= Order.open.count %> orders open ·
-    <span class="font-semibold text-advisory-500"><%= Order.open.select(&:flagged?).count %> flagged</span>
+    <%= Order.live.count %> orders open ·
+    <span class="font-semibold text-advisory-500"><%= Order.live.select(&:flagged?).count %> flagged</span>
     · reasoning on Gemma 4, on-device
   </p>
 
