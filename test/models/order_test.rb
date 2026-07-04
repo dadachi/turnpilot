@@ -110,8 +110,7 @@ class OrderTest < ActiveSupport::TestCase
   test "baseline_cook_seconds averages recent completed cook durations for the shop" do
     [ 300, 360, 420 ].each_with_index do |dur, i|
       Order.create!(status: :completed, shop_id: SHOP, queue_number: i.to_s,
-                    prepared_at: NOW - (dur + 60), completed_at: NOW - 60)
-      Order.last.update_columns(prepared_at: NOW - dur, completed_at: NOW) # exact durations
+                    prepared_at: NOW - dur, completed_at: NOW) # cook duration = dur
     end
     assert_equal 360, Order.baseline_cook_seconds(SHOP) # (300+360+420)/3
   end
