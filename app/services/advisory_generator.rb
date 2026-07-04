@@ -11,6 +11,7 @@ class AdvisoryGenerator
   def call
     return nil if @order.suppressed? # staff overrode a similar advisory recently — stay quiet
     result = GemmaClient.advise(prompt(build_snapshot))
+    return nil unless advise?(result["advise"]) # Gemma decided it's not worth interrupting staff
     advisory = @order.advisories.create!(
       kind: "walk_away_risk",
       status: :pending,
@@ -27,6 +28,15 @@ class AdvisoryGenerator
 
   private
 
+  # Coerce Gemma's `advise` into a strict boolean. Gemma occasionally returns a string
+  # ("false", "no") or a label instead of a JSON boolean, so accept those; but default to
+  # advising whenever the value is ambiguous, so a fuzzy response never drops a real alert.
+  def advise?(value)
+    return value if [ true, false ].include?(value)
+
+    !%w[false no 0 none skip never].include?(value.to_s.strip.downcase)
+  end
+
   def build_snapshot
     {
       shop: "Cafe demo",
@@ -42,9 +52,14 @@ class AdvisoryGenerator
   def prompt(snapshot)
     <<~PROMPT
       You are TurnPilot, a live queue-ops copilot for a walk-in shop. An order has been
-      cooking longer than this shop's normal, so the waiting customer may walk away. Give ONE
-      short, actionable advisory for the staff. Reply with a JSON object with keys:
-        advise (boolean), text (one sentence to staff), rationale (brief), suggested_action.
+      cooking longer than this shop's normal, so the waiting customer may walk away.
+
+      Reply with ONLY a JSON object (no prose, no markdown) with these keys:
+        "advise": a JSON boolean — exactly true or false, never a word or label. true if
+                  staff should act now; false if the delay is minor or nothing would help.
+        "text": one short imperative sentence to staff.
+        "rationale": brief reason (cite the cook time vs the shop's normal).
+        "suggested_action": a short snake_case action, e.g. check_kitchen or update_customer.
 
       Situation:
       #{JSON.pretty_generate(snapshot)}

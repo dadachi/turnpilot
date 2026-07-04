@@ -17,7 +17,7 @@
 - [x] **Override suppresses similar advisories + feeds back a learned threshold** — `ShopThreshold` + suppression window (`Advisory::SUPPRESSION_WINDOW`)
 - [x] **Real-time ticking replayer** — `console#tick` + Stimulus `replay_controller` poll; rush plays out live via Turbo
 - [x] **Tests** for `Order` math (9) + advisory trigger (4, Gemma+broadcast stubbed, offline)
-- [ ] Tighten Gemma prompt so `advise` is a strict boolean (model returned a label)
+- [x] Tighten Gemma prompt so `advise` is a strict boolean — prompt hardened + `advise?` coercion; `advise:false` now vetoes the alert
 - [ ] Add a sound/toast on new advisory; a compact live queue strip
 
 ## Next breadth (after v1 is solid)
@@ -27,6 +27,12 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Strict-boolean Gemma advise gate (2026-07-04)
+Hardened the Gemma prompt (advise must be a JSON boolean, JSON-only, snake_case action) and
+added `AdvisoryGenerator#advise?` coercion — `advise:false`/"no" now vetoes the alert (no
+advisory, no broadcast), while ambiguous values still default to advising so a fuzzy response
+never drops a real one. +2 tests → 36 green.
+
 ### Ticking replayer — live driver (2026-07-04) — real-time replay step 2/2 ✅ complete
 `console#tick` advances the sim (`Replayer.tick` on wall-clock `now`) and broadcasts the
 refreshed status strip; a Stimulus `replay_controller` polls it every 4s, so the seeded rush
