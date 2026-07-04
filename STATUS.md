@@ -43,6 +43,11 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Run rush resets learned threshold (2026-07-05)
+`Replayer.seed` now also `ShopThreshold.delete_all`, so each demo starts fresh at baseline
+sensitivity (×1.5, "alerts after ~7.9m") instead of carrying a raised threshold from a prior
+Override. Verified live: 1.65 → 1.5 on Run rush. +1 test → 57 green.
+
 ### Browser smoke-test — 2 bugs found + fixed (2026-07-05)
 Drove the live demo in a browser (real Gemma/Ollama). Works end-to-end: both advisory types
 stream in, queue strip ETA counts down, Override raised "alerts after" 7.9m→8.7m, no console

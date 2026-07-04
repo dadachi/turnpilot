@@ -16,6 +16,7 @@ class Replayer
 
     Advisory.delete_all # advisories FK-reference orders; clear them before resetting orders
     Order.delete_all
+    ShopThreshold.delete_all # fresh demo: reset each shop's learned sensitivity to baseline
     by_qn = {}
     events.each do |e|
       at = Time.parse(e["at"]) + shift
