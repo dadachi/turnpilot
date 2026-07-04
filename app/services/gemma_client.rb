@@ -22,10 +22,17 @@ class GemmaClient
       messages: [ { role: "user", content: prompt } ],
       options: { temperature:, num_predict: }
     })
-    content = res.dig("message", "content").to_s
-    JSON.parse(content[/\{.*\}/m] || content)
+    self.class.parse_content(res.dig("message", "content"))
+  end
+
+  # Extract the JSON object from Gemma's message content. Even with format:"json", the
+  # content can carry surrounding text/fences, so grab the outermost {...}. Raises
+  # GemmaClient::Error on anything unparseable.
+  def self.parse_content(content)
+    text = content.to_s
+    JSON.parse(text[/\{.*\}/m] || text)
   rescue JSON::ParserError => e
-    raise Error, "unparseable advisory JSON: #{e.message} (raw: #{content.to_s[0, 200]})"
+    raise Error, "unparseable advisory JSON: #{e.message} (raw: #{text[0, 200]})"
   end
 
   private
