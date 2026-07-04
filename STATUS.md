@@ -4,7 +4,7 @@
 > human can triage in ~5 minutes at wake-up. Newest cycle on top.
 
 ## At-a-glance
-- **Build health:** tests ✅ pass (0 real tests yet) · main ✅ green · local Gemma 4 ✅ reachable
+- **Build health:** tests ✅ 13 runs / 29 assertions (Order math + advisory trigger) · main ✅ green · local Gemma 4 ✅ reachable
 - **v1 walk-away-risk path:** ✅ working end-to-end (seed → flag → Gemma advisory → Turbo console → Accept/Override)
 - **Demo replayable from `synthetic_rush.json`:** ✅ yes (`Replayer.seed` + `Replayer.tick`; visit `/` and "Run rush")
 
@@ -16,7 +16,7 @@
 - [x] Advisory streams to console via Turbo; Accept/Override buttons render
 - [ ] **Override should suppress similar advisories + feed back a learned threshold** (v1 gap)
 - [ ] **Real-time accelerated replayer** (currently seed anchors mid-rush; add a ticking clock)
-- [ ] **Tests** for `Order` math + advisory trigger (none yet — add first)
+- [x] **Tests** for `Order` math (9) + advisory trigger (4, Gemma+broadcast stubbed, offline)
 - [ ] Tighten Gemma prompt so `advise` is a strict boolean (model returned a label)
 - [ ] Add a sound/toast on new advisory; a compact live queue strip
 
@@ -27,6 +27,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
 - _(none)_
 
 ## Cycle log (newest first)
+### Tests (2026-07-04) — first real coverage on the demo path
+`test/models/order_test.rb` (9): `wait_seconds`, `walk_away_risk`, `flagged?` incl. the
+540s/9-min boundary, `wait_minutes` — in-memory `Order.new` + fixed `NOW`, no DB/Ollama.
+`test/services/advisory_generator_test.rb` (4): advisory persisted from Gemma result,
+Turbo broadcast target, missing-key degradation, and error → nil/no-persist — `GemmaClient`
++ broadcast swapped out (Minitest 6 dropped `Object#stub`, so a small singleton-swap helper).
+CI `test` job now runs 13 tests instead of 0. Also wrote README + repo about.
+
 ### Ops (2026-07-04) — Dependabot bumps merged + CI fix + main protected
 Merged all 4 Dependabot PRs: `image_processing` 1.14→2.0.2 (unused gem, no-op),
 GH Actions `checkout` 6→7, `cache` 4→6, `upload-artifact` 4→7. They were all red on a
