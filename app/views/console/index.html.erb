@@ -1,5 +1,8 @@
 <%= turbo_stream_from "console" %>
-<div class="mx-auto max-w-2xl p-6">
+<div class="mx-auto max-w-2xl p-6"
+     data-controller="replay"
+     data-replay-url-value="<%= console_tick_path %>"
+     data-replay-interval-value="4000">
   <header class="mb-4 flex items-center justify-between">
     <h1 class="text-xl font-bold text-ink">
       TurnPilot <span class="text-brand-500">·</span> Cafe demo
@@ -8,11 +11,7 @@
           class: "rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500" %>
   </header>
 
-  <p class="mb-4 text-sm text-muted">
-    <%= Order.live.count %> orders open ·
-    <span class="font-semibold text-advisory-500"><%= Order.live.select(&:flagged?).count %> flagged</span>
-    · reasoning on Gemma 4, on-device
-  </p>
+  <%= render "status" %>
 
   <div id="advisories" class="space-y-3">
     <%= render Advisory.recent.limit(20) %>
