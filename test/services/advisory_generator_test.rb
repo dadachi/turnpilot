@@ -87,6 +87,25 @@ class AdvisoryGeneratorTest < ActiveSupport::TestCase
     assert_not called, "Gemma must not be called while suppressed"
   end
 
+  test "does not advise when Gemma returns advise:false" do
+    order = flagged_order
+    with_gemma(ADVICE.merge("advise" => false)) do
+      assert_no_difference -> { Advisory.count } do
+        assert_nil AdvisoryGenerator.for(order, now: NOW)
+      end
+    end
+  end
+
+  test "treats a stringy negative advise as false, but ambiguous as true" do
+    order = flagged_order
+    with_gemma(ADVICE.merge("advise" => "no")) do
+      assert_nil AdvisoryGenerator.for(order, now: NOW)
+    end
+    with_gemma(ADVICE.merge("advise" => "affirmative")) do
+      assert_not_nil AdvisoryGenerator.for(order, now: NOW), "ambiguous defaults to advising"
+    end
+  end
+
   test "returns nil and persists nothing when Gemma errors" do
     order = flagged_order
     raiser = ->(*, **) { raise GemmaClient::Error, "ollama unreachable" }
