@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  shop_id: 
+  queue_number: MyString
+  joined_at: 2026-07-04 19:31:22
+  prepared_at: 2026-07-04 19:31:22
+  customer_read_at: 2026-07-04 19:31:22
+  completed_at: 2026-07-04 19:31:22
+  status: 1
+
+two:
+  shop_id: 
+  queue_number: MyString
+  joined_at: 2026-07-04 19:31:22
+  prepared_at: 2026-07-04 19:31:22
+  customer_read_at: 2026-07-04 19:31:22
+  completed_at: 2026-07-04 19:31:22
+  status: 1

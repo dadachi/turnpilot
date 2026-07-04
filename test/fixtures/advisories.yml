@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  order: one
+  kind: MyString
+  text: MyString
+  rationale: MyText
+  suggested_action: MyString
+  status: 1
+
+two:
+  order: two
+  kind: MyString
+  text: MyString
+  rationale: MyText
+  suggested_action: MyString
+  status: 1
