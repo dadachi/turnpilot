@@ -43,6 +43,47 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Vision capstone P5 (2026-07-05) — demo reproducibility ✅ capstone complete
+`Replayer.simulate_vision(waiting|busy|left)` seeds fixed observations so each vision beat
+reproduces on cue WITHOUT a live camera (advisory still real Gemma) — matches the replayer's
+determinism. Console "Simulate camera" buttons + `POST /vision/simulate`. README gains a
+Camera-vision section. +3 tests → 90 green. Verified: simulate → real-Gemma advisory.
+**All 5 phases done (#36–#40); epic ready to merge.**
+
+### Vision capstone P4 (2026-07-05) — walk-away change-detection (epic branch)
+`WalkedAwayAdvisor` (order-less): the camera saw a customer, now gone, WHILE a flagged order
+is still cooking → "re-notify / check on the order." `someone_left` is DEBOUNCED change
+detection — the two most-recent obs both absent (not a one-frame flicker) after a present one
+— since a single frame can't answer "did they leave?". Own suppression + advise-veto; inert
+without the departure pattern OR a flagged cook. Wired into `Replayer.tick`. +5 tests → 87.
+Verified live with real Gemma ("Check on the customer's status and expedite the order").
+
+### Vision capstone P3 (2026-07-05) — perception folds into advisories ✅ demoable
+Camera perception now produces visible advisories. `Replayer.walk_away` escalates a
+BORDERLINE cook (≥0.8 risk, not yet flagged) when a fresh observation shows `people_present`
+— filling the "is anyone actually waiting?" gap; `AdvisoryGenerator` snapshot/prompt gains
+`customer_waiting`. New `QueueBuildingAdvisor` (order-less, like OpenServer): `busy` camera +
+nothing cooking → "start taking orders" nudge, own suppression + advise-veto. Stale/absent
+obs → fully inert. +10 tests → 82 green. Verified live: escalated walk-away + queue-building
+both fired from real Gemma. **First demoable vision milestone — epic is now merge-worthy.**
+
+### Vision capstone P2 (2026-07-05) — browser capture + opt-in camera toggle (epic branch)
+`camera_controller` (Stimulus): opt-in toggle → `getUserMedia` → canvas downscale ~512px →
+JPEG → POST `/vision/observations` every ~5s, chained; pulsing "camera on" indicator.
+`VisionObservationsController#create` → `VisionClient.observe` → persists coarse obs, prunes,
+discards frame. Frame never stored/logged (`:frame` filtered; no blob column). +3 tests → 72.
+Verified full round-trip live: browser canvas frame → CSRF fetch → real Gemma → observation
+(count 0→1). **`getUserMedia` (camera permission) needs a manual browser smoke-test.**
+
+### Vision capstone P1 (2026-07-05) — VisionClient + fixed-image path (epic/camera-vision)
+`VisionClient.observe(path|base64)` — local Gemma 4 vision via Ollama `/api/chat`
+(think:false, format:json, `images:[b64]`), coarse contract only (`people_present`,
+`queue_level none|light|busy`, `note` — NO counting), safe-default normalize, error → nil
+(inert). `VisionObservation` model + migration (uuid, loose shop_id, **no blob column**,
+`latest_for`/`fresh?`/`prune!`). Staged fixtures + `rake vision:observe` dev proof.
+Verified live: person→present/light, empty→none. +12 tests → 69 green. See #36 / spec.
+
+
 ### Run rush resets learned threshold (2026-07-05)
 `Replayer.seed` now also `ShopThreshold.delete_all`, so each demo starts fresh at baseline
 sensitivity (×1.5, "alerts after ~7.9m") instead of carrying a raised threshold from a prior

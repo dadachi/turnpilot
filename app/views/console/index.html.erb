@@ -7,12 +7,31 @@
     <h1 class="text-xl font-bold text-ink">
       TurnPilot <span class="text-brand-500">·</span> Cafe demo
     </h1>
-    <%= button_to "Run rush", console_demo_path, method: :post,
-          class: "rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500" %>
+    <div class="flex items-center gap-3"
+         data-controller="camera" data-camera-url-value="<%= vision_observations_path %>">
+      <span data-camera-target="indicator" style="display:none"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-advisory-500">
+        <span class="h-2 w-2 rounded-full bg-advisory-500 animate-pulse"></span> camera on
+      </span>
+      <button type="button" data-camera-target="button" data-action="camera#toggle"
+              class="rounded-lg border border-muted px-3 py-2 text-sm font-semibold text-muted hover:bg-surface">
+        Enable camera
+      </button>
+      <%= button_to "Run rush", console_demo_path, method: :post,
+            class: "rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500" %>
+    </div>
   </header>
 
   <%= render "status" %>
   <%= render "queue" %>
+
+  <div class="mb-4 flex items-center gap-2 text-xs text-muted">
+    <span class="font-semibold">Simulate camera:</span>
+    <% { "waiting" => "customer waiting", "busy" => "line forming", "left" => "customer left" }.each do |scenario, label| %>
+      <%= button_to label, vision_simulate_path(scenario: scenario), method: :post,
+            class: "rounded-md border border-brand-100 bg-brand-50 px-2.5 py-1 font-semibold text-brand-700 hover:bg-brand-100" %>
+    <% end %>
+  </div>
 
   <div id="advisories" class="space-y-3" data-controller="chime">
     <%= render Advisory.recent.limit(20) %>

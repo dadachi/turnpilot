@@ -1,11 +1,12 @@
 # Builds a situational snapshot for a flagged order, asks local Gemma for an advisory,
 # persists it, and broadcasts it to the console via Turbo Streams.
 class AdvisoryGenerator
-  def self.for(order, now: Time.current) = new(order, now:).call
+  def self.for(order, now: Time.current, customer_waiting: false) = new(order, now:, customer_waiting:).call
 
-  def initialize(order, now: Time.current)
+  def initialize(order, now: Time.current, customer_waiting: false)
     @order = order
     @now = now
+    @customer_waiting = customer_waiting # camera perception: is a customer visibly at the counter?
   end
 
   def call
@@ -34,6 +35,7 @@ class AdvisoryGenerator
       shop: "Cafe demo",
       baseline_cook_min: (Order.baseline_cook_seconds(@order.shop_id) / 60.0).round(1),
       cooking_now: Order.live(@now).count,
+      customer_waiting: @customer_waiting, # from the on-device camera (coarse); false if camera off/stale
       slow_order: {
         queue_number: @order.queue_number,
         cooking_min: @order.cook_minutes(@now)
@@ -44,7 +46,9 @@ class AdvisoryGenerator
   def prompt(snapshot)
     <<~PROMPT
       You are TurnPilot, a live queue-ops copilot for a walk-in shop. An order has been
-      cooking longer than this shop's normal, so the waiting customer may walk away.
+      cooking longer than this shop's normal, so the waiting customer may walk away. If
+      `customer_waiting` is true, the counter camera sees a customer at the counter right now
+      — weigh that as extra urgency.
 
       Reply with ONLY a JSON object (no prose, no markdown) with these keys:
         "advise": a JSON boolean — exactly true or false, never a word or label. true if

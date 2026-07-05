@@ -14,6 +14,12 @@ Rails.application.routes.draw do
   post "console/demo", to: "console#demo",  as: :console_demo
   post "console/tick", to: "console#tick",  as: :console_tick
 
+  # Camera-vision capstone: browser posts a downscaled frame; server derives a coarse
+  # observation via local Gemma and discards the frame. See docs/vision-capstone-spec.md.
+  post "vision/observations", to: "vision_observations#create", as: :vision_observations
+  # Deterministic demo: seed a camera scenario (waiting|busy|left) without a live camera.
+  post "vision/simulate", to: "vision_observations#simulate", as: :vision_simulate
+
   resources :advisories, only: [] do
     member do
       patch :accept
