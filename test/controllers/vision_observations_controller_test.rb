@@ -46,7 +46,11 @@ class VisionObservationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test ":frame is filtered from logs" do
-    assert_includes Rails.application.config.filter_parameters, :frame
+    # Assert the behavior (a frame param is redacted), robust to whether filter_parameters is
+    # a symbol list (dev) or a compiled regexp (eager-loaded CI).
+    filtered = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+                                             .filter("frame" => "base64-secret")
+    assert_equal "[FILTERED]", filtered["frame"]
   end
 
   test "simulate seeds a camera scenario and redirects to the console" do
