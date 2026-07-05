@@ -43,6 +43,16 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Fix: Accept now suppresses re-alerts on the same order (2026-07-05)
+Reported: accept an order's advisory, and a fresh "Delay risk (order #N)" reappears a tick later.
+Cause: `Order#suppressed?` only counted *overridden* (dismissed) advisories, so after Accept the
+order had no pending advisory and wasn't suppressed — still cooking + still over threshold → the
+next `walk_away` tick re-fired. Fix: `suppressed?` now treats a recently **handled** advisory —
+Accepted *or* Dismissed — as suppressing (created within `SUPPRESSION_WINDOW`). The learning
+difference stays (Accept lowers the threshold, Dismiss raises it); both just get a quiet window.
+Updated the suppression tests (accept now suppresses; pending/resolved/other-kind don't) + live-
+verified (accept → suppressed?=true → next tick adds nothing). 95 tests green.
+
 ### Refresh README + GitHub "about" (2026-07-05)
 Brought the public docs current: Accept/**Override** → Accept/**Dismiss** everywhere; plainer
 one-liner ("spots late orders and tells staff what to do"); noted the narrative-spine console,
