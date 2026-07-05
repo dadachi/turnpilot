@@ -43,6 +43,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Distinguish shop-wide vs per-order advisories with a scope icon (2026-07-05)
+"whole kitchen" (shop-level) and "order #N" (per-order) advisories looked near-identical — same
+pink stripe, only small grey corner text differed. Added a scope cue: the subject is now a small
+pill with an icon — 🍳 whole kitchen vs 🧾 order #N — so the two read distinctly at a glance
+(same in the collapsed handled row). Kept pink for all (they're all act-now alerts); did NOT use
+color for scope because blue reads as "on-track/calm" elsewhere and would missignal. No mobile
+overflow (390px checked). 94 tests green.
+
 ### Drop the newest-card focus ring (arbitrary, read as inconsistent) (2026-07-05)
 The top pending card had a full pink focus ring (`first:ring`) while the rest had only the pink
 left-stripe — reported as confusing ("why is that one all pink?"). The ring marked *newest*, not
