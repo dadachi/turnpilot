@@ -103,10 +103,12 @@ class Order < ApplicationRecord
     where(shop_id: shop_id).where(completed_at: (now - window)..now).count
   end
 
-  # True when a same-kind advisory was overridden within the suppression window — staff
-  # just rejected this; don't re-advise until it lapses.
+  # True when a same-kind advisory was recently HANDLED — Accepted or Dismissed — within the
+  # suppression window. Staff just dealt with this order, so don't re-advise on it until the
+  # window lapses (Accept means "I'm on it", Dismiss means "not needed" — either way, quiet).
   def suppressed?(kind: "walk_away_risk", window: Advisory::SUPPRESSION_WINDOW)
-    advisories.overridden.where(kind: kind).where(created_at: window.ago..).exists?
+    advisories.where(status: [ :accepted, :overridden ], kind: kind)
+              .where(created_at: window.ago..).exists?
   end
 
   # The status implied by this order's event timeline at time `now`. The stored

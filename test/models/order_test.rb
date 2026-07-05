@@ -77,24 +77,31 @@ class OrderTest < ActiveSupport::TestCase
     assert order.walk_away_risk(NOW) > order.walk_away_risk(NOW, threshold: 2.0)
   end
 
-  # --- suppressed? (override quiets similar advisories) -------------------
+  # --- suppressed? (handling an advisory quiets re-alerts on that order) --
 
-  test "suppressed? is true only for a recent same-kind override" do
+  test "suppressed? is true for a recent same-kind dismiss, then lapses" do
     order = Order.create!(status: :prepared, prepared_at: NOW - 600, queue_number: "7")
 
     assert_not order.suppressed?, "no advisories yet"
 
     a = order.advisories.create!(kind: "walk_away_risk", status: :overridden, text: "x")
-    assert order.suppressed?, "recent override suppresses"
+    assert order.suppressed?, "recent dismiss suppresses"
 
     a.update_column(:created_at, (Advisory::SUPPRESSION_WINDOW + 1.minute).ago)
-    assert_not order.suppressed?, "override older than the window no longer suppresses"
+    assert_not order.suppressed?, "handled older than the window no longer suppresses"
   end
 
-  test "suppressed? ignores accepted advisories and other kinds" do
+  test "suppressed? is true after an accept too — staff is on it, don't re-alert" do
     order = Order.create!(status: :prepared, prepared_at: NOW - 600, queue_number: "8")
     order.advisories.create!(kind: "walk_away_risk", status: :accepted, text: "ok")
-    order.advisories.create!(kind: "open_server", status: :overridden, text: "other")
+    assert order.suppressed?
+  end
+
+  test "suppressed? ignores pending/resolved advisories and other kinds" do
+    order = Order.create!(status: :prepared, prepared_at: NOW - 600, queue_number: "9")
+    order.advisories.create!(kind: "walk_away_risk", status: :pending,  text: "p")
+    order.advisories.create!(kind: "walk_away_risk", status: :resolved, text: "r")
+    order.advisories.create!(kind: "open_server",    status: :overridden, text: "other")
     assert_not order.suppressed?
   end
 
