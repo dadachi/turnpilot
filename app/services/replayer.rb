@@ -60,7 +60,7 @@ class Replayer
 
     begin
       advance(now)
-      walk_away(now, limit) + open_server(now) + queue_building(now)
+      walk_away(now, limit) + open_server(now) + queue_building(now) + walked_away(now)
     ensure
       conn.execute("SELECT pg_advisory_unlock(#{TICK_LOCK_KEY})")
     end
@@ -93,9 +93,18 @@ class Replayer
   # Shop-level "customers are lining up but nothing has been started" nudge — per shop with a
   # fresh camera observation.
   def self.queue_building(now)
+    camera_shops(now).filter_map { |sid| QueueBuildingAdvisor.for(sid, now: now) }
+  end
+
+  # Shop-level "a waiting customer just left while an order is still cooking" advisories.
+  def self.walked_away(now)
+    camera_shops(now).filter_map { |sid| WalkedAwayAdvisor.for(sid, now: now) }
+  end
+
+  # Shops with a fresh camera observation.
+  def self.camera_shops(now)
     VisionObservation.where(observed_at: (now - VisionObservation::FRESH_WINDOW)..now)
                      .distinct.pluck(:shop_id).compact
-                     .filter_map { |sid| QueueBuildingAdvisor.for(sid, now: now) }
   end
 
   # Fresh "a customer is visibly waiting" signal for a shop (false when camera off/stale/empty).

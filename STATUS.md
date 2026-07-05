@@ -43,6 +43,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Vision capstone P4 (2026-07-05) — walk-away change-detection (epic branch)
+`WalkedAwayAdvisor` (order-less): the camera saw a customer, now gone, WHILE a flagged order
+is still cooking → "re-notify / check on the order." `someone_left` is DEBOUNCED change
+detection — the two most-recent obs both absent (not a one-frame flicker) after a present one
+— since a single frame can't answer "did they leave?". Own suppression + advise-veto; inert
+without the departure pattern OR a flagged cook. Wired into `Replayer.tick`. +5 tests → 87.
+Verified live with real Gemma ("Check on the customer's status and expedite the order").
+
 ### Vision capstone P3 (2026-07-05) — perception folds into advisories ✅ demoable
 Camera perception now produces visible advisories. `Replayer.walk_away` escalates a
 BORDERLINE cook (≥0.8 risk, not yet flagged) when a fresh observation shows `people_present`
