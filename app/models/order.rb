@@ -63,6 +63,15 @@ class Order < ApplicationRecord
     secs && (secs / 60.0).round(1)
   end
 
+  # Minutes cooked past the shop's normal — the same "over normal" figure the advisory
+  # rationale speaks to, so the queue chip and the advisory card cite one number. nil when
+  # not cooking; 0 before it crosses the baseline.
+  def over_minutes(now = Time.current, baseline: BASELINE_COOK_SECONDS)
+    return nil unless cooking?(now)
+
+    [ (cook_seconds(now) - baseline) / 60.0, 0 ].max.round(1)
+  end
+
   # This shop's *normal* cook time, learned from history: the average prepared→completed
   # duration over recent completed orders. Falls back to the constant until there's enough
   # signal. This is what "vs this shop's normal" honestly means (both timestamps are

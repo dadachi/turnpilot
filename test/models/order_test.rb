@@ -139,6 +139,21 @@ class OrderTest < ActiveSupport::TestCase
     assert_equal 180, cooking(120).eta_seconds(NOW, baseline: 300)  # 300 - 120
   end
 
+  # --- over_minutes (minutes past the shop's normal) --------------------
+
+  test "over_minutes is minutes past the baseline while cooking" do
+    assert_in_delta 2.0, cooking(480).over_minutes(NOW), 0.001      # (480 - 360) / 60
+    assert_in_delta 4.0, cooking(480).over_minutes(NOW, baseline: 240), 0.001
+  end
+
+  test "over_minutes is 0 before the order crosses the baseline" do
+    assert_equal 0.0, cooking(120).over_minutes(NOW)               # still under the 360s baseline
+  end
+
+  test "over_minutes is nil when not cooking" do
+    assert_nil Order.new(status: :waiting, joined_at: NOW - 60).over_minutes(NOW)
+  end
+
   # --- shop-level throughput signals (open-a-server) ---------------------
 
   test "cooking_count counts only actively-cooking orders for the shop" do
