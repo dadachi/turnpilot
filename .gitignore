@@ -48,3 +48,6 @@
 /.gstack/
 
 .gstack/
+
+# Playwright MCP browser artifacts (screenshots, console logs)
+.playwright-mcp/

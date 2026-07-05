@@ -5,7 +5,7 @@
     <% overdue = o.cook_seconds >= base %>
     <span class="rounded-lg px-2.5 py-1 text-xs font-semibold tabular-nums
                  <%= overdue ? "bg-advisory-100 text-advisory-500" : "bg-brand-50 text-muted" %>">
-      #<%= o.queue_number %> · <%= o.cook_minutes %>m<%= overdue ? " · overdue" : " · ~#{o.eta_minutes(baseline: base)}m left" %>
+      #<%= o.queue_number %> · <%= o.cook_minutes %>m<%= overdue ? " · +#{o.over_minutes(baseline: base)}m over" : " · ~#{o.eta_minutes(baseline: base)}m left" %>
     </span>
   <% end %>
 </div>
