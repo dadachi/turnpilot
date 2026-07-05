@@ -30,7 +30,7 @@
       </p>
       <p class="mt-0.5 text-xs text-muted">
         <%= cooking %> cooking · normal cook ~<%= (base / 60.0).round(1) %>m ·
-        <span title="Rises each time staff Override — the copilot learns to advise less">TurnPilot
+        <span title="Rises each time staff Dismiss an alert — the copilot learns to advise less">TurnPilot
           alerts after ~<%= (base * mult / 60.0).round(1) %>m</span><%
           if seen %> · <span class="font-semibold text-brand-700">👁 <%=
             line ? "line forming" : (waiting ? "customer waiting" : "counter clear") %></span><% end %>

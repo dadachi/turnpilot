@@ -25,7 +25,8 @@
     <div class="mt-3 flex gap-2">
       <%= button_to "Accept", accept_advisory_path(advisory), method: :patch,
             class: "rounded-lg bg-accept-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-accept-500" %>
-      <%= button_to "Override", override_advisory_path(advisory), method: :patch,
+      <%= button_to "Dismiss", override_advisory_path(advisory), method: :patch,
+            title: "Dismiss — tells TurnPilot this wasn't worth alerting on, so it alerts less next time",
             class: "rounded-lg border border-muted px-4 py-1.5 text-sm font-semibold text-muted hover:bg-surface" %>
     </div>
 
@@ -41,7 +42,7 @@
   <%
     icon  = advisory.overridden? ? "↩" : "✓"
     tone  = advisory.accepted? ? "text-accept-600" : "text-muted"
-    label = advisory.resolved? ? "cleared · order done" : advisory.status
+    label = advisory.resolved? ? "cleared · order done" : (advisory.overridden? ? "dismissed" : advisory.status)
   %>
   <div id="<%= dom_id(advisory) %>"
        class="flex items-center gap-2 rounded-lg border border-surface bg-surface px-3 py-2 text-sm">
