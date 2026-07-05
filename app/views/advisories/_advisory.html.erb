@@ -5,7 +5,7 @@
     "queue_building" => "Queue building",
     "walked_away"    => "Walk-off"
   }[advisory.kind] || "Advisory"
-  subject = advisory.order ? "order ##{advisory.order.queue_number}" : "kitchen"
+  subject = advisory.order ? "order ##{advisory.order.queue_number}" : "whole kitchen"
 %>
 <% if advisory.pending? %>
   <%# Live, actionable advisory. Pink left-accent = "act now"; the newest (first) gets a

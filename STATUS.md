@@ -43,6 +43,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Clarify the shop-level CAPACITY advisory (2026-07-05)
+The shop-level (order-less) advisory was labeled just "kitchen" (the fallback subject when an
+advisory has no order) and its rationale was numbers-soup ("Cooking (5) exceeds completions (4),
+and the rate is above baseline (5.3)"). Relabeled the subject "kitchen" → "whole kitchen" so it
+reads clearly as the whole-shop counterpart to "order #N", and rewrote the OpenServerAdvisor
+rationale prompt to plain English + temp 0.5. Live-verified: rationale now "We are cooking more
+orders than we are finishing, causing the wait times to grow" (advise fired 3/3). 94 tests green.
+
 ### Auto-resolve stale advisories when their order finishes cooking (2026-07-05)
 Reported incoherence: an "order #1" advisory card lingered after #1 had left the Live Queue.
 Cause: the Live Queue only shows *cooking* orders, but `tick` never retired the pending
