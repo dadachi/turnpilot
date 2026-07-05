@@ -1,5 +1,7 @@
 # TurnPilot
 
+**▶ [Watch the demo](https://youtu.be/5K_dsMP1AqY)** · [Design spec](docs/DESIGN.md) · [Build status](STATUS.md)
+
 **A live copilot for walk-in shops — it spots late orders and tells staff what to do.**
 TurnPilot watches a streaming NFC queue-event feed, builds a situational model of the
 kitchen, and turns it into **plain-language advisories** with a one-tap **Accept / Dismiss**
