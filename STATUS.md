@@ -43,6 +43,18 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Auto-resolve stale advisories when their order finishes cooking (2026-07-05)
+Reported incoherence: an "order #1" advisory card lingered after #1 had left the Live Queue.
+Cause: the Live Queue only shows *cooking* orders, but `tick` never retired the pending
+advisory an order spawned — so once the order completed it dropped out of the queue while its
+unactioned advisory stayed in "What TurnPilot advises," telling staff to chase a finished order.
+Fix: new `resolved` Advisory status + `Replayer.resolve_stale(now)` (runs in `tick` after
+`advance`) marks any pending, order-scoped advisory whose order is no longer cooking as resolved
+and broadcasts the replace, so the pending card collapses live to a muted "✓ order #N · cleared ·
+order done" row. Keeps the queue and the advice list in sync. +1 test (fire while cooking →
+jump past completion → all resolved, 0 order-scoped pending). Verified live at offset −6m: queue
+#11/#12 cooking, #1–3 collapsed as cleared. 94 tests green.
+
 ### Varied advisory rationale — kill the "if-statement" tell (2026-07-05)
 The rationale prompt used to say *"cite the cook time vs the shop's normal"*, so at temp 0.2
 every flagged order produced the identical template "The slow order (X min) significantly
