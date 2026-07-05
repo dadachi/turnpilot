@@ -43,6 +43,22 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Marketing pass — surface the offline-Gemma story + make learning visible (2026-07-05)
+Fable (as marketer) reviewed the real rendered console. Shipped its top batch: (1) **header
+offline badge** `● Offline · Gemma 4 on-device` + tagline + a per-advisory footer `Reasoned
+locally by Gemma 4 · 0 cloud calls` — the track-winning differentiator was buried at the tail
+of a grey status line; now it's the second thing you see and it's proven on every card.
+(2) **Fixed the mobile header** (was a 3-line wrap colliding with the buttons; now title+badge
+row, tagline, compact Camera/Read-aloud row). (3) **Recessed the demo scaffolding** into a
+dashed "Demo controls" strip (Run rush + Simulate camera + a neutral "Live replay · Cafe"
+chip) so the test rig no longer outranks the hero advisory; demoted "Cafe demo" out of the H1.
+(4) **Override now shows the learning**: a toast "Got it — raising the alert threshold for this
+shop." + the status strip re-broadcasts so "advising after ~Xm" visibly climbs (verified live:
+7.9m→8.7m→9.5m→14.5m over four Overrides, and "at risk" 3→2 as a raised threshold un-flagged a
+borderline order). New `toast_controller` + `_toast` partial; button labels shortened
+(Camera / Read aloud). Verified via Playwright at 1280px + 390px + DOM-observed toast insertion.
+90 tests green. UI-heavy — a morning click-through smoke-test is still worth doing.
+
 ### Spoken advisories + audio-input spike (2026-07-05)
 Spike result (recorded so we don't retry it): **Ollama does NOT pass audio to `gemma4:e4b`** —
 posting a spoken WAV/MP3 via `audio`/`audios` fields returns HTTP 200 but the model replies

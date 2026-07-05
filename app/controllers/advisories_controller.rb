@@ -12,6 +12,7 @@ class AdvisoriesController < ApplicationController
     @advisory.overridden!
     learned_threshold.record_override! # staff rejected → advise less on similar situations
     broadcast
+    toast("Got it — raising the alert threshold for this shop.")
     head :ok
   end
 
@@ -31,6 +32,17 @@ class AdvisoriesController < ApplicationController
       "console",
       target: ActionView::RecordIdentifier.dom_id(@advisory),
       partial: "advisories/advisory", locals: { advisory: @advisory }
+    )
+    # Refresh the status strip so the learned "advising after ~Xm" threshold visibly moves
+    # as staff Accept/Override — the copilot adapting, on screen.
+    Turbo::StreamsChannel.broadcast_replace_to(
+      "console", target: "status", partial: "console/status"
+    )
+  end
+
+  def toast(message)
+    Turbo::StreamsChannel.broadcast_append_to(
+      "console", target: "toast", partial: "console/toast", locals: { message: message }
     )
   end
 end

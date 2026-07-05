@@ -29,7 +29,7 @@ export default class extends Controller {
 
   toggle() {
     this.on = !this.on
-    if (this.hasButtonTarget) this.buttonTarget.textContent = this.on ? "🔊 Voice on" : "🔊 Speak"
+    if (this.hasButtonTarget) this.buttonTarget.textContent = this.on ? "🔊 Reading aloud" : "Read aloud"
     if (!this.on) window.speechSynthesis?.cancel()
   }
 

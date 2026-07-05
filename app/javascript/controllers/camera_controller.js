@@ -65,7 +65,7 @@ export default class extends Controller {
 
   render() {
     if (this.hasIndicatorTarget) this.indicatorTarget.style.display = this.on ? "inline-flex" : "none"
-    if (this.hasButtonTarget) this.buttonTarget.textContent = this.on ? "Camera on" : "Enable camera"
+    if (this.hasButtonTarget) this.buttonTarget.textContent = this.on ? "Camera on" : "Camera"
   }
 
   get csrf() {
