@@ -51,6 +51,23 @@ class ReplayerTickTest < ActiveSupport::TestCase
     end
   end
 
+  test "tick resolves advisories whose order finished cooking before staff acted" do
+    Replayer.seed(now: NOW)
+    with_stubs do
+      fired = Replayer.tick(now: NOW).select { |a| a.kind == "walk_away_risk" }
+      assert_not_empty fired
+      assert fired.all?(&:pending?), "freshly fired advisories start pending"
+
+      # Jump well past the rush: every seeded order has finished cooking by now.
+      Replayer.tick(now: NOW + 1.hour)
+
+      fired.each(&:reload)
+      assert fired.all?(&:resolved?), "advisories for completed orders auto-resolve"
+      assert_equal 0, Advisory.pending.where.not(order_id: nil).count,
+                   "no order-scoped advisory should still demand action once its order is done"
+    end
+  end
+
   test "reproducible: same seed + now flags the same orders" do
     Replayer.seed(now: NOW)
     first = with_stubs { walk_away_queues(Replayer.tick(now: NOW)) }

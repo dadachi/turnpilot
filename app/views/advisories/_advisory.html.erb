@@ -36,14 +36,18 @@
     </p>
   </div>
 <% else %>
-  <%# Handled — collapse to a one-line row so the loop visibly closes and the screen declutters. %>
+  <%# Handled (accepted / overridden) or auto-resolved (order finished cooking) — collapse to a
+      one-line row so the loop visibly closes and the screen declutters. %>
+  <%
+    icon  = advisory.overridden? ? "↩" : "✓"
+    tone  = advisory.accepted? ? "text-accept-600" : "text-muted"
+    label = advisory.resolved? ? "cleared · order done" : advisory.status
+  %>
   <div id="<%= dom_id(advisory) %>"
        class="flex items-center gap-2 rounded-lg border border-surface bg-surface px-3 py-2 text-sm">
-    <span class="shrink-0 <%= advisory.accepted? ? "text-accept-600" : "text-muted" %>"><%= advisory.accepted? ? "✓" : "↩" %></span>
+    <span class="shrink-0 <%= tone %>"><%= icon %></span>
     <span class="shrink-0 text-xs font-semibold uppercase text-muted"><%= subject %></span>
     <span class="truncate text-muted"><%= advisory.text %></span>
-    <span class="ml-auto shrink-0 text-xs font-semibold uppercase <%= advisory.accepted? ? "text-accept-600" : "text-muted" %>">
-      <%= advisory.status %>
-    </span>
+    <span class="ml-auto shrink-0 text-xs font-semibold uppercase <%= tone %>"><%= label %></span>
   </div>
 <% end %>

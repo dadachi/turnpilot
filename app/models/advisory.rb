@@ -3,7 +3,9 @@ class Advisory < ApplicationRecord
   belongs_to :order, optional: true
 
   # kind: which advisory type (v1: "walk_away_risk"; later: open_server, eta)
-  enum :status, { pending: 0, accepted: 1, overridden: 2 }
+  # resolved = the situation ended on its own (the order finished cooking) before staff
+  # acted, so the advisory is retired rather than left demanding an Accept/Override.
+  enum :status, { pending: 0, accepted: 1, overridden: 2, resolved: 3 }
 
   # After an Override, quiet similar advisories (same order + kind) for this long.
   SUPPRESSION_WINDOW = 5.minutes

@@ -60,10 +60,27 @@ class Replayer
 
     begin
       advance(now)
+      resolve_stale(now) # retire advisories whose order finished cooking before staff acted
       walk_away(now, limit) + open_server(now) + queue_building(now) + walked_away(now)
     ensure
       conn.execute("SELECT pg_advisory_unlock(#{TICK_LOCK_KEY})")
     end
+  end
+
+  # A pending, order-scoped advisory whose order is no longer cooking (it completed) is stale:
+  # the walk-away window is over, so retire it as `resolved` instead of leaving it in the advice
+  # list demanding action on a finished order. Keeps the Live Queue and the advice list in sync.
+  # Returns the resolved advisories (broadcasting each so the pending card collapses live).
+  def self.resolve_stale(now)
+    stale = Advisory.pending.where.not(order_id: nil).includes(:order).reject { |a| a.order&.cooking?(now) }
+    stale.each do |a|
+      a.resolved!
+      Turbo::StreamsChannel.broadcast_replace_to(
+        "console", target: ActionView::RecordIdentifier.dom_id(a),
+        partial: "advisories/advisory", locals: { advisory: a }
+      )
+    end
+    stale
   end
 
   ESCALATION_RISK = 0.8 # a borderline cook advises early when the camera sees a waiting customer
