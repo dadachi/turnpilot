@@ -17,7 +17,7 @@ class OpenServerAdvisor
     return nil unless overwhelmed?
     return nil if recently_advised?
 
-    result = GemmaClient.advise(prompt(snapshot))
+    result = GemmaClient.advise(prompt(snapshot), temperature: 0.5)
     return nil unless Advisory.advise?(result["advise"])
 
     advisory = Advisory.create!(
@@ -65,7 +65,9 @@ class OpenServerAdvisor
         "advise": a JSON boolean — exactly true or false, never a word. true if staff should
                   add prep capacity now; false if the backlog is likely to clear on its own.
         "text": one short imperative sentence to staff.
-        "rationale": brief reason (cite the backlog vs recent completions).
+        "rationale": one short plain-English sentence a manager gets instantly — that the
+                     kitchen is falling behind because more orders are cooking than are
+                     finishing, so waits are growing. Don't just list raw counts.
         "suggested_action": a short snake_case action, e.g. open_prep_station.
 
       Situation:
