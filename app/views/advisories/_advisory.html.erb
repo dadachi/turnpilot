@@ -6,6 +6,8 @@
     "walked_away"    => "Walk-off"
   }[advisory.kind] || "Advisory"
   subject = advisory.order ? "order ##{advisory.order.queue_number}" : "whole kitchen"
+  # Scope cue so a per-order advisory (🧾) is instantly distinct from a shop-wide one (🍳).
+  scope_icon = advisory.order ? "🧾" : "🍳"
 %>
 <% if advisory.pending? %>
   <%# Live, actionable advisory. Every pending card looks the same — pink left-accent = "act
@@ -14,7 +16,9 @@
        class="rounded-xl border border-brand-100 border-l-4 border-l-advisory-500 bg-white p-4 shadow-sm">
     <div class="flex items-center justify-between">
       <span class="text-xs font-bold uppercase tracking-wide text-advisory-500"><%= kind_label %></span>
-      <span class="text-xs font-semibold text-muted"><%= subject %></span>
+      <span class="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-muted">
+        <span aria-hidden="true"><%= scope_icon %></span> <%= subject %>
+      </span>
     </div>
     <p class="mt-1 font-semibold text-ink"><%= advisory.text %></p>
     <% if advisory.rationale.present? %>
@@ -46,7 +50,7 @@
   <div id="<%= dom_id(advisory) %>"
        class="flex items-center gap-2 rounded-lg border border-surface bg-surface px-3 py-2 text-sm">
     <span class="shrink-0 <%= tone %>"><%= icon %></span>
-    <span class="shrink-0 text-xs font-semibold uppercase text-muted"><%= subject %></span>
+    <span class="shrink-0 text-xs font-semibold uppercase text-muted"><span aria-hidden="true"><%= scope_icon %></span> <%= subject %></span>
     <span class="truncate text-muted"><%= advisory.text %></span>
     <span class="ml-auto shrink-0 text-xs font-semibold uppercase <%= tone %>"><%= label %></span>
   </div>
