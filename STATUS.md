@@ -43,6 +43,19 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Varied advisory rationale — kill the "if-statement" tell (2026-07-05)
+The rationale prompt used to say *"cite the cook time vs the shop's normal"*, so at temp 0.2
+every flagged order produced the identical template "The slow order (X min) significantly
+exceeds the baseline cook time (5.3 min)" — a judge reads that as an `if (t > threshold)`, not
+an LLM, undercutting the whole reasoning claim. Fix: added a distinct per-order anchor
+`minutes_over_normal` to the snapshot; rewrote the rationale instruction to lead with a
+concrete order-specific fact and VARY the opening/angle (minutes past normal · customer still
+at counter · knock-on to the queue), explicitly banning stock openers and raw-number restatement;
+nudged this call's temperature 0.2→0.5. Live-verified against real Gemma across 6 draws on the
+flagged orders: **6/6 distinct, customer/queue-framed rationales, 0 advise-failures** (JSON
+stayed valid, `advise` stayed true — no demo destabilization). JSON contract unchanged, and the
+partial already hides a blank rationale, so there's no crash path. 90 tests green.
+
 ### Marketing pass — surface the offline-Gemma story + make learning visible (2026-07-05)
 Fable (as marketer) reviewed the real rendered console. Shipped its top batch: (1) **header
 offline badge** `● Offline · Gemma 4 on-device` + tagline + a per-advisory footer `Reasoned
