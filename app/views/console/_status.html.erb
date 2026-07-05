@@ -7,5 +7,11 @@
     · <span title="Rises each time staff Override — the copilot learns to advise less">alerts after
       ~<%= (base * ShopThreshold.multiplier_for(sid) / 60.0).round(1) %>m</span>
   <% end %>
+  <% cam = VisionObservation.latest_for(Order.live.pick(:shop_id) || Replayer::DEMO_SHOP_ID) %>
+  <% if cam&.fresh? %>
+    · <span class="font-semibold text-brand-700"
+            title="On-device camera perception (coarse, offline Gemma vision)">👁 camera:
+      <%= cam.queue_level_busy? ? "line forming" : (cam.people_present ? "customer waiting" : "counter clear") %></span>
+  <% end %>
   · reasoning on Gemma 4, on-device
 </div>

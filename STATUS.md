@@ -43,6 +43,14 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Camera path verified live + camera-state indicator (2026-07-05)
+Confirmed the FULL camera path on a real webcam: `getUserMedia` + "camera on" indicator +
+frames POSTing every ~6s + real Gemma reading `present=true` with accurate notes → observations
+flowing → **walk-away and escalated advisories fired from the real camera** ("Customer left
+while an order is significantly delayed"; "a customer is waiting at the counter"). The last
+manual smoke-test item is cleared. Added a "👁 camera: <state>" indicator to the status strip
+so the coarse perception is visible on-screen.
+
 ### Vision capstone P5 (2026-07-05) — demo reproducibility ✅ capstone complete
 `Replayer.simulate_vision(waiting|busy|left)` seeds fixed observations so each vision beat
 reproduces on cue WITHOUT a live camera (advisory still real Gemma) — matches the replayer's
