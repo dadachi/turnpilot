@@ -11,7 +11,9 @@ class AdvisoryGenerator
 
   def call
     return nil if @order.suppressed? # staff overrode a similar advisory recently — stay quiet
-    result = GemmaClient.advise(prompt(build_snapshot))
+    # A little more warmth than the default so rationales read naturally and vary between
+    # orders instead of collapsing to one template; still low enough for reliable JSON.
+    result = GemmaClient.advise(prompt(build_snapshot), temperature: 0.5)
     return nil unless Advisory.advise?(result["advise"]) # Gemma decided it's not worth interrupting staff
     advisory = @order.advisories.create!(
       kind: "walk_away_risk",
@@ -31,14 +33,18 @@ class AdvisoryGenerator
   private
 
   def build_snapshot
+    baseline_min = (Order.baseline_cook_seconds(@order.shop_id) / 60.0).round(1)
+    cooking_min = @order.cook_minutes(@now)
     {
       shop: "Cafe demo",
-      baseline_cook_min: (Order.baseline_cook_seconds(@order.shop_id) / 60.0).round(1),
+      baseline_cook_min: baseline_min,
       cooking_now: Order.live(@now).count,
       customer_waiting: @customer_waiting, # from the on-device camera (coarse); false if camera off/stale
       slow_order: {
         queue_number: @order.queue_number,
-        cooking_min: @order.cook_minutes(@now)
+        cooking_min: cooking_min,
+        # A distinct per-order anchor so Gemma can speak to THIS order's specific stakes.
+        minutes_over_normal: (cooking_min - baseline_min).round(1)
       }
     }
   end
@@ -54,7 +60,13 @@ class AdvisoryGenerator
         "advise": a JSON boolean — exactly true or false, never a word or label. true if
                   staff should act now; false if the delay is minor or nothing would help.
         "text": one short imperative sentence to staff.
-        "rationale": brief reason (cite the cook time vs the shop's normal).
+        "rationale": one short sentence in a manager's voice on why THIS order matters right
+                     now. Lead with a concrete, order-specific fact and VARY the opening and
+                     angle every time — sometimes the minutes past normal, sometimes that the
+                     customer is still at the counter, sometimes the knock-on to the rest of
+                     the queue. Never reuse a stock opener (e.g. "This customer has waited
+                     longer than usual" or "The slow order"), and don't just restate the raw
+                     numbers already on screen.
         "suggested_action": a short snake_case action, e.g. check_kitchen or update_customer.
 
       Situation:
