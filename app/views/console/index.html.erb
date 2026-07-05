@@ -25,6 +25,14 @@
   <%= render "status" %>
   <%= render "queue" %>
 
+  <div class="mb-4 flex items-center gap-2 text-xs text-muted">
+    <span class="font-semibold">Simulate camera:</span>
+    <% { "waiting" => "customer waiting", "busy" => "line forming", "left" => "customer left" }.each do |scenario, label| %>
+      <%= button_to label, vision_simulate_path(scenario: scenario), method: :post,
+            class: "rounded-md border border-brand-100 bg-brand-50 px-2.5 py-1 font-semibold text-brand-700 hover:bg-brand-100" %>
+    <% end %>
+  </div>
+
   <div id="advisories" class="space-y-3" data-controller="chime">
     <%= render Advisory.recent.limit(20) %>
   </div>

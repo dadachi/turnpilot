@@ -48,4 +48,11 @@ class VisionObservationsControllerTest < ActionDispatch::IntegrationTest
   test ":frame is filtered from logs" do
     assert_includes Rails.application.config.filter_parameters, :frame
   end
+
+  test "simulate seeds a camera scenario and redirects to the console" do
+    assert_difference -> { VisionObservation.count }, 3 do
+      post vision_simulate_path(scenario: "left")
+    end
+    assert_redirected_to console_path
+  end
 end

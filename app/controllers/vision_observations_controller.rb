@@ -21,6 +21,13 @@ class VisionObservationsController < ApplicationController
     head :ok # frame is now out of scope and gone; nothing about it is retained
   end
 
+  # Deterministic demo: seed a camera scenario so the vision advisories fire on cue without a
+  # live camera. The next Replayer.tick turns it into a real-Gemma advisory.
+  def simulate
+    Replayer.simulate_vision(params[:scenario])
+    redirect_to console_path
+  end
+
   private
 
   # Single-shop demo: attribute observations to the shop that has orders.

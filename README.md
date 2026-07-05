@@ -42,6 +42,23 @@ NFC event feed ──▶ Replayer ──▶ Order situational model ──▶ fl
   `synthetic_rush.json` and a Stimulus poller ticks the clock, so the rush plays out live
   and the demo is repeatable. The queue strip shows each cooking order's ETA countdown.
 
+## Camera vision (capstone) — on-device Gemma perception
+
+MyTurnTag records no "customer joined" signal, so TurnPilot can't otherwise tell who's
+*waiting*. An **opt-in counter camera**, read by the **multimodal** `gemma4:e4b` **on-device**
+(the same offline Gemma, `images:[…]` on `/api/chat`), supplies exactly that — as a coarse,
+privacy-safe signal (`people_present`, a `none|light|busy` band; **never a count**, never a
+stored frame). It feeds the *same* advisory loop:
+
+- a borderline cook **escalates** when a customer is visibly waiting,
+- a **queue-building** nudge when a line forms but nothing's cooking,
+- a **walk-away** advisory when a waiting customer leaves while an order is still overrunning.
+
+It's a background perception input, not an image analyzer — the advisory loop stays the
+product. Full design in [`docs/vision-capstone-spec.md`](docs/vision-capstone-spec.md). The
+console's **Simulate camera** controls reproduce each beat deterministically (no live camera
+needed), matching the replayer's reproducibility.
+
 ## Stack
 
 Rails 8.1 · Ruby 4.0 · PostgreSQL (UUID primary keys) · Hotwire (Turbo Streams / Solid

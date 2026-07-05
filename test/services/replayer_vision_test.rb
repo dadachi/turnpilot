@@ -58,4 +58,19 @@ class ReplayerVisionTest < ActiveSupport::TestCase
                   joined_at: NOW - 700, prepared_at: NOW - 660) # 660s > 540 → flagged
     with_stubs { assert_equal 1, Replayer.walk_away(NOW, 3).size }
   end
+
+  # --- P5 deterministic demo seeding -------------------------------------
+
+  test "simulate_vision waiting seeds a fresh present observation" do
+    o = Replayer.simulate_vision("waiting", now: NOW, shop_id: SHOP)
+    assert o.people_present
+    assert_equal "light", o.queue_level
+    assert o.fresh?(NOW)
+  end
+
+  test "simulate_vision left seeds a present -> absent -> absent departure" do
+    Replayer.simulate_vision("left", now: NOW, shop_id: SHOP)
+    presence = VisionObservation.for_shop(SHOP).order(:observed_at).pluck(:people_present)
+    assert_equal [ true, false, false ], presence
+  end
 end

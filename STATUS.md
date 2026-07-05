@@ -43,6 +43,13 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Vision capstone P5 (2026-07-05) — demo reproducibility ✅ capstone complete
+`Replayer.simulate_vision(waiting|busy|left)` seeds fixed observations so each vision beat
+reproduces on cue WITHOUT a live camera (advisory still real Gemma) — matches the replayer's
+determinism. Console "Simulate camera" buttons + `POST /vision/simulate`. README gains a
+Camera-vision section. +3 tests → 90 green. Verified: simulate → real-Gemma advisory.
+**All 5 phases done (#36–#40); epic ready to merge.**
+
 ### Vision capstone P4 (2026-07-05) — walk-away change-detection (epic branch)
 `WalkedAwayAdvisor` (order-less): the camera saw a customer, now gone, WHILE a flagged order
 is still cooking → "re-notify / check on the order." `someone_left` is DEBOUNCED change

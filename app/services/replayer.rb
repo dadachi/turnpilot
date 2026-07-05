@@ -113,6 +113,34 @@ class Replayer
     obs.present? && obs.fresh?(now) && obs.people_present
   end
 
+  DEMO_SHOP_ID = "8f4c2b10-0000-4000-8000-000000000001" # the fixture shop (synthetic_rush.json)
+
+  # Deterministic camera seeding for the demo — so each vision advisory reproduces on cue
+  # WITHOUT a live camera or a live Gemma-vision read (the advisory itself still uses real
+  # Gemma). Mirrors the deterministic replayer: fixed observations, reproducible beats.
+  def self.simulate_vision(scenario, now: Time.current, shop_id: demo_shop_id)
+    case scenario.to_s
+    when "waiting" # a customer at the counter → escalates a borderline cook
+      seed_observation(shop_id, now, present: true, level: :light)
+    when "busy"    # a line forms → queue-building nudge (when nothing is cooking)
+      seed_observation(shop_id, now, present: true, level: :busy)
+    when "left"    # present → absent → absent → walk-away detection
+      seed_observation(shop_id, now - 10, present: true,  level: :light)
+      seed_observation(shop_id, now - 5,  present: false, level: :none)
+      seed_observation(shop_id, now,      present: false, level: :none)
+    end
+    VisionObservation.latest_for(shop_id, now)
+  end
+
+  def self.seed_observation(shop_id, at, present:, level:)
+    VisionObservation.create!(shop_id: shop_id, observed_at: at, people_present: present, queue_level: level)
+  end
+
+  # The shop the demo attributes camera observations to (the one with orders, else the fixture).
+  def self.demo_shop_id
+    Order.where.not(shop_id: nil).pick(:shop_id) || DEMO_SHOP_ID
+  end
+
   # One shop-level open-a-server advisory per shop that's falling behind.
   def self.open_server(now)
     Order.live(now).distinct.pluck(:shop_id).compact
