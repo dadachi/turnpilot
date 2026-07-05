@@ -1,6 +1,6 @@
 <%= turbo_stream_from "console" %>
 <div class="mx-auto max-w-2xl p-6"
-     data-controller="replay"
+     data-controller="replay voice"
      data-replay-url-value="<%= console_tick_path %>"
      data-replay-interval-value="4000">
   <header class="mb-4 flex items-center justify-between">
@@ -16,6 +16,11 @@
       <button type="button" data-camera-target="button" data-action="camera#toggle"
               class="rounded-lg border border-muted px-3 py-2 text-sm font-semibold text-muted hover:bg-surface">
         Enable camera
+      </button>
+      <button type="button" data-voice-target="button" data-action="voice#toggle"
+              title="Speak each new advisory aloud (offline browser voice)"
+              class="rounded-lg border border-muted px-3 py-2 text-sm font-semibold text-muted hover:bg-surface">
+        🔊 Speak
       </button>
       <%= button_to "Run rush", console_demo_path, method: :post,
             class: "rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-500" %>

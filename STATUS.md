@@ -43,6 +43,17 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Spoken advisories + audio-input spike (2026-07-05)
+Spike result (recorded so we don't retry it): **Ollama does NOT pass audio to `gemma4:e4b`** —
+posting a spoken WAV/MP3 via `audio`/`audios` fields returns HTTP 200 but the model replies
+"I cannot listen to any audio input." The listed "audio" capability isn't wired through the API
+(unlike `images`, which works). So voice-*input* / Gemma-generated speech is out of scope.
+Shipped the honest half instead: **spoken advisories** — an opt-in "🔊 Speak" toggle + a
+`voice_controller` that watches the advisory list and reads each new card aloud via the
+browser's offline `speechSynthesis`. Reasoning stays on-device Gemma; the voice is local
+browser TTS (no cloud, no extra model). JS-only — **needs a morning browser smoke-test**
+(toggle on, trigger an advisory, confirm it speaks once). 90 tests still green.
+
 ### Camera path verified live + camera-state indicator (2026-07-05)
 Confirmed the FULL camera path on a real webcam: `getUserMedia` + "camera on" indicator +
 frames POSTing every ~6s + real Gemma reading `present=true` with accurate notes → observations
