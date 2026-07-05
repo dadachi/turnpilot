@@ -43,6 +43,16 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Rename the "Override" button to "Dismiss" (2026-07-05)
+"Override" was the least clear label on the screen — it didn't say what it does (dismiss the
+alert) and could be misread as "override the system." Renamed the UI button "Override" → "Dismiss"
++ a tooltip ("tells TurnPilot this wasn't worth alerting on, so it alerts less next time"); the
+collapsed handled row now reads "dismissed"; the status-strip tooltip says "each time staff
+Dismiss an alert." INTERNAL names unchanged (status `overridden`, `override_advisory_path`,
+`record_override!`) — no code churn, no route change. Verified live: buttons read Accept/Dismiss,
+dismissing collapses to "… dismissed" and still raises the threshold + toasts. Pitch note: call
+it the "Accept/Dismiss loop." 94 tests green.
+
 ### Clarify the shop-level CAPACITY advisory (2026-07-05)
 The shop-level (order-less) advisory was labeled just "kitchen" (the fallback subject when an
 advisory has no order) and its rationale was numbers-soup ("Cooking (5) exceeds completions (4),
