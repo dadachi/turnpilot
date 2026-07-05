@@ -43,6 +43,13 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Refresh README + GitHub "about" (2026-07-05)
+Brought the public docs current: Accept/**Override** → Accept/**Dismiss** everywhere; plainer
+one-liner ("spots late orders and tells staff what to do"); noted the narrative-spine console,
+scope-icon advisory types (🧾 per-order / 🍳 whole kitchen), the visible learning loop + toast,
+auto-resolve on completion, the queue "+Xm over" chip, and the opt-in Read-aloud. GitHub repo
+description updated to match via `gh repo edit`.
+
 ### Distinguish shop-wide vs per-order advisories with a scope icon (2026-07-05)
 "whole kitchen" (shop-level) and "order #N" (per-order) advisories looked near-identical — same
 pink stripe, only small grey corner text differed. Added a scope cue: the subject is now a small
