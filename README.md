@@ -1,12 +1,15 @@
 # TurnPilot
 
-**A live queue-ops copilot for walk-in shops.** TurnPilot watches a streaming NFC
-queue-event feed, builds a situational model of the kitchen, and turns it into
-**plain-language advisories** with a one-tap **Accept / Override** loop. All reasoning
-runs on **local Gemma 4 via Ollama — offline, on-device, privacy-first**. No cloud calls.
+**A live copilot for walk-in shops — it spots late orders and tells staff what to do.**
+TurnPilot watches a streaming NFC queue-event feed, builds a situational model of the
+kitchen, and turns it into **plain-language advisories** with a one-tap **Accept / Dismiss**
+loop. All reasoning runs on **local Gemma 4 via Ollama — offline, on-device, privacy-first**.
+No cloud calls.
 
-It is deliberately **not a dashboard**: the product is the advisory + accept/override
-loop, not a wall of charts.
+It is deliberately **not a dashboard**: the product is the advisory + accept/dismiss
+loop, not a wall of charts. The console reads top-to-bottom as a story — a plain-language
+situation line ("3 orders running late — a customer is waiting at the counter"), the live
+queue, then the advice.
 
 > Built entirely during the event. See [`docs/DESIGN.md`](docs/DESIGN.md) for the full
 > design spec and [`STATUS.md`](STATUS.md) for current build status.
@@ -26,21 +29,28 @@ data-model rationale, and applies to shops in `preparing_mode`.)
 NFC event feed ──▶ Replayer ──▶ Order situational model ──▶ flagged? ──▶ Advisor ──▶ Gemma 4
 (synthetic_rush.json)  (ticks)   (cook overrun · throughput)             │      (Ollama /api/chat)
                                                                          ▼
-                                     Turbo Stream ──▶ Console (Accept / Override · learns)
+                                     Turbo Stream ──▶ Console (Accept / Dismiss · learns)
 ```
 
 - **Situational model** — `Order#cook_seconds` = `prepared → now` (frozen at `completed`);
   `Order#flagged?` fires when cook time exceeds the shop's **learned** baseline cook time
   (`avg(completed − prepared)`) × a per-shop sensitivity multiplier.
-- **Two advisory types** — `AdvisoryGenerator` (per-order **walk-away risk** from cook
-  overrun) and `OpenServerAdvisor` (shop-level **open-a-server** when the cooking backlog
-  outpaces recent completions). Both ask `GemmaClient` (local Gemma 4) for one short JSON advisory.
-- **Learning loop** — staff **Accept** / **Override** each advisory; Override raises the
-  shop's sensitivity (advise less) and suppresses similar advisories for a window, and the
-  console shows the "alerts after ~Ym" threshold moving as it adapts.
+- **Advisory types** — per-order **🧾 walk-away risk** (`AdvisoryGenerator`, from cook
+  overrun) and shop-level **🍳 capacity / open-a-server** (`OpenServerAdvisor`, when the
+  cooking backlog outpaces recent completions); the camera adds more (below). A scope icon
+  marks per-order vs whole-kitchen at a glance. Each asks `GemmaClient` (local Gemma 4) for
+  one short JSON advisory in plain, human language.
+- **Learning loop** — staff **Accept** (act on it) or **Dismiss** (not needed) each advisory;
+  Dismiss raises the shop's sensitivity so it advises less on similar situations and suppresses
+  them for a window — a toast confirms, and the console's "alerts after ~Ym" threshold visibly
+  climbs as it adapts. A completed order's unactioned advisory **auto-resolves** so the advice
+  list stays in sync with the live queue.
+- **Speaks up (opt-in)** — a **Read aloud** toggle speaks each new advisory via the browser's
+  offline text-to-speech, so heads-down staff hear it; the reasoning is still on-device Gemma.
 - **Live & reproducible** — a deterministic `Replayer` seeds a fixed rush from
   `synthetic_rush.json` and a Stimulus poller ticks the clock, so the rush plays out live
-  and the demo is repeatable. The queue strip shows each cooking order's ETA countdown.
+  and the demo is repeatable. The queue strip shows each cooking order's time and minutes over
+  normal (`#3 · 9.9m · +4.5m over`) or its ETA countdown.
 
 ## Camera vision (capstone) — on-device Gemma perception
 
