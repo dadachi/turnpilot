@@ -1,16 +1,40 @@
-<div id="status" class="mb-4 text-sm text-muted">
-  <%= Order.live.count %> cooking ·
-  <span class="font-semibold text-advisory-500"><%= Order.live.select(&:flagged?).count %> at risk</span>
-  <% if (sid = Order.live.pick(:shop_id)) %>
-    <% base = Order.baseline_cook_seconds(sid) %>
-    · normal cook ~<%= (base / 60.0).round(1) %>m
-    · <span title="Rises each time staff Override — the copilot learns to advise less">alerts after
-      ~<%= (base * ShopThreshold.multiplier_for(sid) / 60.0).round(1) %>m</span>
-  <% end %>
-  <% cam = VisionObservation.latest_for(Order.live.pick(:shop_id) || Replayer::DEMO_SHOP_ID) %>
-  <% if cam&.fresh? %>
-    · <span class="font-semibold text-brand-700"
-            title="On-device camera perception (coarse, offline Gemma vision)">👁 camera:
-      <%= cam.queue_level_busy? ? "line forming" : (cam.people_present ? "customer waiting" : "counter clear") %></span>
-  <% end %>
+<%
+  sid       = Order.live.pick(:shop_id) || Replayer::DEMO_SHOP_ID
+  cooking   = Order.live.count
+  at_risk   = Order.live.select(&:flagged?).count
+  base      = Order.baseline_cook_seconds(sid)
+  mult      = ShopThreshold.multiplier_for(sid)
+  cam       = VisionObservation.latest_for(sid)
+  seen      = cam&.fresh?
+  waiting   = seen && cam.people_present
+  line      = seen && cam.queue_level_busy?
+  alert     = at_risk.positive?
+%>
+<div id="status" class="mb-4">
+  <%# Plain-language "what's happening right now" — the narrative spine. Raw numbers move
+      to the demoted sub-line below so the headline reads like a sentence, not a telegram. %>
+  <div class="flex items-start gap-2.5 rounded-lg border-l-4 px-3 py-2.5
+              <%= alert ? "border-advisory-500 bg-advisory-100" : "border-brand-300 bg-brand-50" %>">
+    <span class="text-lg leading-tight"><%= alert ? "⚠️" : "☕" %></span>
+    <div class="min-w-0">
+      <p class="font-semibold text-ink">
+        <% if alert %>
+          <%= at_risk %> order<%= "s" if at_risk != 1 %> running late<%=
+            waiting ? " — a customer is waiting at the counter" :
+            (line ? " — a line is forming" : "") %>.
+        <% elsif line %>
+          A line is forming — no orders are running late yet.
+        <% else %>
+          Running smoothly — <%= cooking %> order<%= "s" if cooking != 1 %> cooking, none late.
+        <% end %>
+      </p>
+      <p class="mt-0.5 text-xs text-muted">
+        <%= cooking %> cooking · normal cook ~<%= (base / 60.0).round(1) %>m ·
+        <span title="Rises each time staff Override — the copilot learns to advise less">TurnPilot
+          alerts after ~<%= (base * mult / 60.0).round(1) %>m</span><%
+          if seen %> · <span class="font-semibold text-brand-700">👁 <%=
+            line ? "line forming" : (waiting ? "customer waiting" : "counter clear") %></span><% end %>
+      </p>
+    </div>
+  </div>
 </div>

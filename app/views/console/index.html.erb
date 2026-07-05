@@ -1,5 +1,5 @@
 <%= turbo_stream_from "console" %>
-<div class="mx-auto max-w-2xl p-6"
+<div class="mx-auto w-full min-w-0 max-w-2xl p-6"
      data-controller="replay voice"
      data-replay-url-value="<%= console_tick_path %>"
      data-replay-interval-value="4000">
@@ -13,7 +13,7 @@
             <span class="h-1.5 w-1.5 rounded-full bg-accept-500"></span> Offline · Gemma 4 on-device
           </span>
         </div>
-        <p class="mt-1 text-sm text-muted">Queue-ops copilot that reasons on-device — private, offline.</p>
+        <p class="mt-1 text-sm text-muted">Spots late orders and tells staff what to do — reasoning on-device, offline.</p>
       </div>
       <div class="flex items-center gap-2"
            data-controller="camera" data-camera-url-value="<%= vision_observations_path %>">
@@ -49,8 +49,11 @@
   </div>
 
   <%= render "status" %>
+
+  <h2 class="mb-1 mt-4 text-xs font-semibold uppercase tracking-wide text-muted">Live queue</h2>
   <%= render "queue" %>
 
+  <h2 class="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-muted">What TurnPilot advises</h2>
   <div id="advisories" class="space-y-3" data-controller="chime">
     <%= render Advisory.recent.limit(20) %>
   </div>
