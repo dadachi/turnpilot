@@ -43,6 +43,13 @@ open-a-server advisory · ETA-to-customer · no-show re-notify · baseline from 
   - "baseline from stats": already done as `Order.baseline_cook_seconds` (avg real cook time).
 
 ## Cycle log (newest first)
+### Drop the newest-card focus ring (arbitrary, read as inconsistent) (2026-07-05)
+The top pending card had a full pink focus ring (`first:ring`) while the rest had only the pink
+left-stripe — reported as confusing ("why is that one all pink?"). The ring marked *newest*, not
+*most urgent* (e.g. it sat on order #3 while order #1 was further overdue), so it looked like a
+priority cue but wasn't. Removed it: every pending card now looks identical (pink left-accent =
+act now); recency is already conveyed by top position. 94 tests green.
+
 ### Rename the "Override" button to "Dismiss" (2026-07-05)
 "Override" was the least clear label on the screen — it didn't say what it does (dismiss the
 alert) and could be misread as "override the system." Renamed the UI button "Override" → "Dismiss"

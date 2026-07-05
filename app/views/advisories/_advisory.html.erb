@@ -8,11 +8,10 @@
   subject = advisory.order ? "order ##{advisory.order.queue_number}" : "whole kitchen"
 %>
 <% if advisory.pending? %>
-  <%# Live, actionable advisory. Pink left-accent = "act now"; the newest (first) gets a
-      focus ring so the eye lands on it. Category label + subject so cards read distinctly. %>
+  <%# Live, actionable advisory. Every pending card looks the same — pink left-accent = "act
+      now". Category label + subject so cards read distinctly; newest is already obvious (on top). %>
   <div id="<%= dom_id(advisory) %>"
-       class="rounded-xl border border-brand-100 border-l-4 border-l-advisory-500 bg-white p-4 shadow-sm
-              first:ring-2 first:ring-advisory-500/30">
+       class="rounded-xl border border-brand-100 border-l-4 border-l-advisory-500 bg-white p-4 shadow-sm">
     <div class="flex items-center justify-between">
       <span class="text-xs font-bold uppercase tracking-wide text-advisory-500"><%= kind_label %></span>
       <span class="text-xs font-semibold text-muted"><%= subject %></span>
