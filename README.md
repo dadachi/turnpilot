@@ -1,5 +1,7 @@
 # TurnPilot
 
+[![TurnPilot — a live copilot for walk-in shops, reasoning on-device with Gemma 4, offline](docs/assets/turnpilot-hero.png)](https://youtu.be/5K_dsMP1AqY)
+
 **▶ [Watch the demo](https://youtu.be/5K_dsMP1AqY)** · [Design spec](docs/DESIGN.md) · [Build status](STATUS.md)
 
 **A live copilot for walk-in shops — it spots late orders and tells staff what to do.**
